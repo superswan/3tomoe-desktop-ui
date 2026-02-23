@@ -1,0 +1,22 @@
+{
+  "bgColor": "#aab9ec",
+  "bgDarken": 0.585,
+  "gradStrength": 1,
+  "waveMix": 0.521,
+  "waveContrast": 0.6,
+  "waveTint": "#cdc6e1",
+  "waveBoost": 0.28,
+  "dustEnabled": true,
+  "dustAmount": 0.12,
+  "daveHoskins": true,
+  "cardsVisible": true,
+  "statusLineOpaque": false,
+  "statusLineAlpha": 0.33,
+  "statusLineBorders": false,
+  "statusLineCorners": false,
+  "statusLineElementBoxes": false,
+  "statusLineElementBg": false,
+  "statusLineElementBgAlpha": 0.33,
+  "uiAccentPreset": "amber",
+  "name": "slate2"
+}

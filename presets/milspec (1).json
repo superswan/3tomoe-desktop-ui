@@ -1,0 +1,22 @@
+{
+  "bgColor": "#314931",
+  "bgDarken": 1.1421,
+  "gradStrength": 0.545,
+  "waveMix": 0.724,
+  "waveContrast": 0,
+  "waveTint": "#77dd88",
+  "waveBoost": 0.28,
+  "dustEnabled": true,
+  "dustAmount": 0.2565,
+  "daveHoskins": true,
+  "cardsVisible": true,
+  "statusLineOpaque": false,
+  "statusLineAlpha": 0.33,
+  "statusLineBorders": false,
+  "statusLineCorners": false,
+  "statusLineElementBoxes": false,
+  "statusLineElementBg": false,
+  "statusLineElementBgAlpha": 0.33,
+  "uiAccentPreset": "green",
+  "name": "milspec"
+}

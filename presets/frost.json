@@ -1,0 +1,22 @@
+{
+  "bgColor": "#f3f3f3",
+  "bgDarken": 0.8568,
+  "gradStrength": 0.6,
+  "waveMix": 0.906,
+  "waveContrast": 0.6,
+  "waveTint": "#fff9eb",
+  "waveBoost": 0.28,
+  "dustEnabled": true,
+  "dustAmount": 0.396,
+  "daveHoskins": true,
+  "cardsVisible": true,
+  "statusLineOpaque": false,
+  "statusLineAlpha": 0.33,
+  "statusLineBorders": false,
+  "statusLineCorners": false,
+  "statusLineElementBoxes": false,
+  "statusLineElementBg": false,
+  "statusLineElementBgAlpha": 0.33,
+  "uiAccentPreset": "cyan",
+  "name": "frost"
+}

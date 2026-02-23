@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>XMB Shader Wallpaper</title>
+  <meta name="description" content="3tomoe XMB shader wallpaper - standalone">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --panel-bg: rgba(8, 10, 18, 0.72);
+      --panel-border: rgba(156, 196, 255, 0.32);
+      --panel-text: #dfe9ff;
+      --panel-muted: #8ea4c9;
+      --panel-accent: #8cb9ff;
+      --panel-danger: #ff7f9a;
+      --panel-success: #9dffca;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0a0c14;
+      color: var(--panel-text);
+      font-family: "Segoe UI", "Consolas", system-ui, sans-serif;
+    }
+
+    #shader-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+    }
+
+    .panel {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+      transition: transform 200ms ease, opacity 200ms ease;
+    }
+
+    .panel.hidden {
+      transform: translateX(calc(100% + 40px));
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel h1 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--panel-accent);
+    }
+
+    .panel p {
+      margin: 0;
+      font-size: 11px;
+      color: var(--panel-muted);
+    }
+
+    .controls { display: grid; gap: 8px; }
+
+    .field {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .field label { font-size: 11px; }
+    .value { min-width: 44px; text-align: right; font-size: 11px; color: var(--panel-muted); font-family: "Consolas", monospace; }
+    .field input[type="range"] { grid-column: 1 / span 2; width: 100%; accent-color: var(--panel-accent); cursor: pointer; }
+
+    .colors { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .color-field { display: grid; gap: 4px; }
+    .color-field label { font-size: 11px; }
+    .color-field input[type="color"] {
+      width: 100%; height: 28px; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px; background: transparent; cursor: pointer; padding: 2px;
+    }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    .toggle-row label { font-size: 11px; }
+    .toggle-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--panel-accent); cursor: pointer; }
+
+    #toggle-panel { position: fixed; right: 14px; top: 14px; z-index: 11; padding: 6px 10px; font-size: 11px; }
+
+    .status { font-size: 10px; min-height: 14px; color: var(--panel-muted); }
+    .status.ok { color: var(--panel-success); }
+    .status.error { color: var(--panel-danger); }
+  </style>
+</head>
+<body>
+  <canvas id="shader-bg"></canvas>
+  <button id="toggle-panel">Settings</button>
+
+  <aside id="panel" class="panel">
+    <h1>XMB Shader</h1>
+    <p>3tomoe wallpaper. Press H to toggle.</p>
+
+    <div class="colors">
+      <div class="color-field"><label>Background</label><input id="bgColor" type="color" value="#261c38"></div>
+      <div class="color-field"><label>Wave Tint</label><input id="waveColor" type="color" value="#bfb3d9"></div>
+    </div>
+
+    <div class="controls">
+      <div class="field"><label>Brightness</label><span class="value" id="bgDarkenValue"></span><input id="bgDarken" type="range" min="0.2" max="1.4" step="0.01" value="0.55"></div>
+      <div class="field"><label>Gradient</label><span class="value" id="gradTiltValue"></span><input id="gradTilt" type="range" min="0" max="1" step="0.01" value="0.5"></div>
+      <div class="field"><label>Wave Intensity</label><span class="value" id="waveMixValue"></span><input id="waveMix" type="range" min="0" max="1" step="0.01" value="0.7"></div>
+      <div class="field"><label>Wave Contrast</label><span class="value" id="waveBoostValue"></span><input id="waveBoost" type="range" min="0.02" max="0.6" step="0.01" value="0.28"></div>
+      <div class="field"><label>Dust Amount</label><span class="value" id="dustAmtValue"></span><input id="dustAmt" type="range" min="0" max="0.5" step="0.01" value="0.12"></div>
+    </div>
+
+    <div class="toggle-row">
+      <label for="dustOn">Dust Particles</label>
+      <input id="dustOn" type="checkbox" checked>
+    </div>
+
+    <p class="status" id="status"></p>
+  </aside>
+
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js" } }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    const STORAGE_KEY = 'xmbShaderWallpaper';
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      precision highp float;
+      
+      varying vec2 vUv;
+      
+      uniform float iTime;
+      uniform vec2 iResolution;
+      uniform vec3 uBgColor;
+      uniform float uBgDarken;
+      uniform vec3 uGradTilt;
+      uniform vec3 uWaveTint;
+      uniform float uWaveMix;
+      uniform vec2 uWaveBoost;
+      uniform float uDustOn;
+      uniform float uDustAmt;
+      
+      #define THRESHOLD 0.99
+      #define MIN_DIST 0.13
+      #define MAX_DIST 40.0
+      #define MAX_DRAWS 40
+      
+      float hash12(vec2 p) {
+        vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return fract((p3.x + p3.y) * p3.z);
+      }
+      
+      float value2d(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash12(i);
+        float b = hash12(i + vec2(1.0, 0.0));
+        float c = hash12(i + vec2(0.0, 1.0));
+        float d = hash12(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+      
+      float get_stars_rough(vec2 p) {
+        float s = smoothstep(THRESHOLD, 1.0, hash12(p));
+        if (s >= THRESHOLD) s = pow((s - THRESHOLD) / (1.0 - THRESHOLD), 10.0);
+        return s;
+      }
+      
+      float get_stars(vec2 p, float a, float t) {
+        vec2 pg = floor(p), pc = p - pg, k = vec2(0.0, 1.0);
+        pc *= pc * pc * (3.0 - 2.0 * pc);
+        float s = mix(
+          mix(get_stars_rough(pg + k.xx), get_stars_rough(pg + k.yx), pc.x),
+          mix(get_stars_rough(pg + k.xy), get_stars_rough(pg + k.yy), pc.x),
+          pc.y
+        );
+        return smoothstep(a, a + t, s) * pow(value2d(p * 0.1 + iTime) * 0.5 + 0.5, 8.3);
+      }
+      
+      float get_dust(vec2 p, vec2 size, float f) {
+        vec2 ar = vec2(iResolution.x / iResolution.y, 1.0);
+        vec2 pp = p * size * ar;
+        return pow(0.64 + 0.46 * cos(p.x * 6.28), 1.7) * f * (
+          get_stars(0.1 * pp + iTime * vec2(20.0, -10.1), 0.11, 0.71) * 4.0 +
+          get_stars(0.2 * pp + iTime * vec2(30.0, -10.1), 0.1, 0.31) * 5.0 +
+          get_stars(0.32 * pp + iTime * vec2(40.0, -10.1), 0.1, 0.91) * 2.0
+        );
+      }
+      
+      float sdf(vec3 p) {
+        p *= 2.0;
+        float o = 4.2 * sin(0.05 * p.x + iTime * 0.25) +
+          (0.04 * p.z) * sin(p.x * 0.11 + iTime) * 2.0 * sin(p.z * 0.2 + iTime) *
+          value2d(vec2(0.03, 0.4) * p.xz + vec2(iTime * 0.5, 0.0));
+        return abs(dot(p, normalize(vec3(0.0, 1.0, 0.05))) + 2.5 + o * 0.5);
+      }
+      
+      vec2 raymarch(vec3 o, vec3 d, float omega) {
+        float t = 0.0, a = 0.0, g = MAX_DIST, dt = 0.0, sl = 0.0, emin = 0.03, ed = emin;
+        int dr = 0;
+        bool hit = false;
+        for (int i = 0; i < 100; i++) {
+          vec3 p = o + d * t;
+          float ndt = sdf(p);
+          if (abs(dt) + abs(ndt) < sl) { sl -= omega * sl; omega = 1.0; }
+          else sl = ndt * omega;
+          dt = ndt;
+          t += sl;
+          g = (t > 10.0) ? min(g, abs(dt)) : MAX_DIST;
+          if ((t += dt) >= MAX_DIST) break;
+          if (dt < MIN_DIST) {
+            if (dr > MAX_DRAWS) break;
+            dr++;
+            float f = smoothstep(0.09, 0.11, (p.z * 0.9) / 100.0);
+            if (!hit) { a = 0.01; hit = true; }
+            ed = 2.0 * max(emin, abs(ndt));
+            a += 0.0135 * f;
+            t += ed;
+          }
+        }
+        g /= 3.0;
+        return vec2(a, max(1.0 - g, 0.0));
+      }
+      
+      void main() {
+        vec2 U = gl_FragCoord.xy;
+        vec2 ires = iResolution.xy;
+        vec2 uv = U / ires;
+        vec3 o = vec3(0.0);
+        vec3 d = vec3((U - 0.5 * ires) / ires.y, 1.0);
+        vec2 mg = raymarch(o, d, 1.2);
+        float m = mg.x;
+        
+        vec3 c = uBgColor;
+        c += (uv.y - 0.5) * uGradTilt;
+        c *= uBgDarken;
+        
+        m = smoothstep(uWaveBoost.x, uWaveBoost.y, m);
+        c = mix(c, uWaveTint, m * uWaveMix);
+        
+        c += uDustOn * get_dust(uv, vec2(2000.0), mg.y) * uDustAmt;
+        
+        gl_FragColor = vec4(c, 1.0);
+      }
+    `;
+
+    const defaults = {
+      bgColor: '#261c38',
+      waveColor: '#bfb3d9',
+      bgDarken: 0.55,
+      gradTilt: 0.5,
+      waveMix: 0.7,
+      waveBoost: 0.28,
+      dustOn: true,
+      dustAmt: 0.12
+    };
+
+    let renderer, scene, camera, mesh, uniforms, clock;
+
+    function hexToRgb(hex) {
+      hex = String(hex || '').replace('#', '').trim();
+      if (hex.length !== 6) return [0.15, 0.12, 0.22];
+      return [
+        parseInt(hex.slice(0, 2), 16) / 255,
+        parseInt(hex.slice(2, 4), 16) / 255,
+        parseInt(hex.slice(4, 6), 16) / 255
+      ];
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...defaults };
+        return { ...defaults, ...JSON.parse(raw) };
+      } catch { return { ...defaults }; }
+    }
+
+    function saveState(state) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    }
+
+    function init() {
+      const canvas = document.getElementById('shader-bg');
+      const panel = document.getElementById('panel');
+      const toggleBtn = document.getElementById('toggle-panel');
+      const statusEl = document.getElementById('status');
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      const state = loadState();
+
+      uniforms = {
+        iTime: { value: 0.0 },
+        iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uBgColor: { value: new THREE.Vector3(...hexToRgb(state.bgColor)) },
+        uBgDarken: { value: state.bgDarken },
+        uGradTilt: { value: new THREE.Vector3(0.04 * state.gradTilt, 0.02 * state.gradTilt, 0.06 * state.gradTilt) },
+        uWaveTint: { value: new THREE.Vector3(...hexToRgb(state.waveColor)) },
+        uWaveMix: { value: state.waveMix },
+        uWaveBoost: { value: new THREE.Vector2(0.02, state.waveBoost) },
+        uDustOn: { value: state.dustOn ? 1.0 : 0.0 },
+        uDustAmt: { value: state.dustAmt }
+      };
+
+      const material = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader,
+        fragmentShader,
+        depthTest: false,
+        depthWrite: false
+      });
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      clock = new THREE.Clock();
+
+      function animate() {
+        uniforms.iTime.value = clock.getElapsedTime();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      function resize() {
+        const w = window.innerWidth, h = window.innerHeight;
+        renderer.setSize(w, h);
+        uniforms.iResolution.value.set(w, h);
+      }
+      window.addEventListener('resize', resize);
+
+      const controls = {
+        bgColor: document.getElementById('bgColor'),
+        waveColor: document.getElementById('waveColor'),
+        bgDarken: document.getElementById('bgDarken'),
+        gradTilt: document.getElementById('gradTilt'),
+        waveMix: document.getElementById('waveMix'),
+        waveBoost: document.getElementById('waveBoost'),
+        dustOn: document.getElementById('dustOn'),
+        dustAmt: document.getElementById('dustAmt')
+      };
+
+      function updateUniforms() {
+        uniforms.uBgColor.value.set(...hexToRgb(state.bgColor));
+        uniforms.uBgDarken.value = state.bgDarken;
+        uniforms.uGradTilt.value.set(0.04 * state.gradTilt, 0.02 * state.gradTilt, 0.06 * state.gradTilt);
+        uniforms.uWaveTint.value.set(...hexToRgb(state.waveColor));
+        uniforms.uWaveMix.value = state.waveMix;
+        uniforms.uWaveBoost.value.set(0.02, state.waveBoost);
+        uniforms.uDustOn.value = state.dustOn ? 1.0 : 0.0;
+        uniforms.uDustAmt.value = state.dustAmt;
+        saveState(state);
+      }
+
+      function readFromControls() {
+        state.bgColor = controls.bgColor.value;
+        state.waveColor = controls.waveColor.value;
+        state.bgDarken = parseFloat(controls.bgDarken.value);
+        state.gradTilt = parseFloat(controls.gradTilt.value);
+        state.waveMix = parseFloat(controls.waveMix.value);
+        state.waveBoost = parseFloat(controls.waveBoost.value);
+        state.dustOn = controls.dustOn.checked;
+        state.dustAmt = parseFloat(controls.dustAmt.value);
+      }
+
+      function applyToControls() {
+        controls.bgColor.value = state.bgColor;
+        controls.waveColor.value = state.waveColor;
+        controls.bgDarken.value = state.bgDarken;
+        controls.gradTilt.value = state.gradTilt;
+        controls.waveMix.value = state.waveMix;
+        controls.waveBoost.value = state.waveBoost;
+        controls.dustOn.checked = state.dustOn;
+        controls.dustAmt.value = state.dustAmt;
+      }
+
+      const sliderIds = ['bgDarken', 'gradTilt', 'waveMix', 'waveBoost', 'dustAmt'];
+      sliderIds.forEach(id => {
+        const input = controls[id];
+        const valueEl = document.getElementById(id + 'Value');
+        const update = () => {
+          readFromControls();
+          valueEl.textContent = Number(input.value).toFixed(2);
+          updateUniforms();
+        };
+        input.addEventListener('input', update);
+        update();
+      });
+
+      controls.bgColor.addEventListener('input', () => { readFromControls(); updateUniforms(); });
+      controls.waveColor.addEventListener('input', () => { readFromControls(); updateUniforms(); });
+      controls.dustOn.addEventListener('change', () => { readFromControls(); updateUniforms(); });
+
+      toggleBtn.addEventListener('click', () => {
+        panel.classList.toggle('hidden');
+        toggleBtn.textContent = panel.classList.contains('hidden') ? 'Settings' : 'Hide';
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h' && !e.ctrlKey && !e.metaKey) {
+          panel.classList.toggle('hidden');
+          toggleBtn.textContent = panel.classList.contains('hidden') ? 'Settings' : 'Hide';
+        }
+      });
+
+      applyToControls();
+      statusEl.textContent = 'Running';
+      statusEl.className = 'status ok';
+    }
+
+    init().catch(err => {
+      console.error('XMB shader init failed:', err);
+      const statusEl = document.getElementById('status');
+      if (statusEl) { statusEl.textContent = 'Error: ' + err.message; statusEl.className = 'status error'; }
+    });
+  </script>
+</body>
+</html>

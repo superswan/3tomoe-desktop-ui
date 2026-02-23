@@ -1,0 +1,52 @@
+# day
+"01.png": { key: "clear_day",              label: "Clear / sunny" }
+"02.png": { key: "mostly_sunny",           label: "Mostly sunny (few clouds)" }
+"03.png": { key: "partly_cloudy_day",      label: "Partly cloudy" }
+"04.png": { key: "mostly_cloudy_day",      label: "Mostly cloudy (sun peeking)" }
+"05.png": { key: "sunny_alt",              label: "Sunny (alt / softer sun)" }
+
+"06.png": { key: "partly_cloudy_more",     label: "Partly cloudy (more cloud cover)" }
+"07.png": { key: "cloudy",                 label: "Cloudy" }
+"08.png": { key: "overcast",               label: "Overcast / dark clouds" }
+"11.png": { key: "fog",                    label: "Fog / mist" }
+
+# rain / storm (day/general)
+"12.png": { key: "rain",                   label: "Rain" }
+"13.png": { key: "showers_day",            label: "Sun + showers" }
+"14.png": { key: "rain_day",               label: "Sun + rain (heavier)" }
+"15.png": { key: "thunderstorm",           label: "Thunderstorm" }
+"16.png": { key: "thundershowers_day",     label: "Sun + thunderstorm" }
+"17.png": { key: "thunder_day",            label: "Sun + lightning (stormy)" }
+
+"18.png": { key: "heavy_rain",             label: "Heavy rain" }
+"19.png": { key: "hail",                   label: "Hail" }
+"20.png": { key: "hail_day",               label: "Sun + hail" }
+"21.png": { key: "hail_partly_cloudy_day", label: "Partly cloudy + hail" }
+
+# snow / mixed precip (day/general)
+"22.png": { key: "snow",                   label: "Snow" }
+"23.png": { key: "snow_showers_day",       label: "Sun + snow" }
+"24.png": { key: "sleet",                  label: "Sleet / wintry mix (ice + precip)" }
+"25.png": { key: "freezing_rain",          label: "Freezing rain / icy rain" }
+"26.png": { key: "wintry_mix",             label: "Wintry mix (rain + snow)" }
+"29.png": { key: "heavy_snow",             label: "Heavy snow" }
+
+# special conditions
+"30.png": { key: "hot",                    label: "Hot temperature" }
+"31.png": { key: "cold",                   label: "Cold / freezing temperature" }
+"32.png": { key: "windy",                  label: "Windy" }
+
+# night
+"33.png": { key: "clear_night",            label: "Clear night" }
+"34.png": { key: "partly_cloudy_night",    label: "Partly cloudy night" }
+"35.png": { key: "mostly_cloudy_night",    label: "Mostly cloudy night" }
+"36.png": { key: "cloudy_night",           label: "Cloudy night" }
+"37.png": { key: "dust_or_haze",           label: "Dust / haze (planet-like icon)" }
+"38.png": { key: "overcast_night",         label: "Overcast night" }
+
+"39.png": { key: "showers_night",          label: "Night showers" }
+"40.png": { key: "rain_night",             label: "Night rain (heavier)" }
+"41.png": { key: "thunder_night",          label: "Night thunderstorm (lightning)" }
+"42.png": { key: "thundershowers_night",   label: "Night thunderstorm + rain" }
+"43.png": { key: "snow_night",             label: "Night snow" }
+"44.png": { key: "heavy_snow_night",       label: "Night heavy snow / blizzardy" }

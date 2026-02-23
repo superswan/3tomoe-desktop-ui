@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>3 Tomoe</title>
+  <meta name="description" content="Creative Development Lab">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="static/css/shader-background.css">
+  <script src="static/js/dragmove.js"></script>
+</head>
+<body>
+  <canvas id="shader-bg" aria-hidden="true"></canvas>
+  <div class="regular-bg">
+    <div class="regular-bg-media" id="regular-bg-media"></div>
+  </div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+  <div class="log-overlay hidden" id="log-overlay">
+    <pre id="log-output"></pre>
+  </div>
+
+  <!-- Home View -->
+  <main class="home-view" id="home-view">
+    <div class="home-logo-section">
+      <h1 class="logo" id="home-site-logo"></h1>
+      <p class="tagline" id="home-site-tagline"></p>
+    </div>
+    
+    <!-- Status Line -->
+    <div class="status-line" id="status-line">
+      <span class="status-date" id="status-date"></span>
+      <span class="status-time" id="status-time"></span>
+      <span class="status-weather" id="status-weather">
+        <img class="status-weather-icon" id="status-weather-icon" alt="" />
+        <span class="status-weather-text" id="status-weather-text">--°F</span>
+      </span>
+    </div>
+    
+    <!-- Main Container with Corner Markers -->
+    <div class="home-container">
+      <div class="edge-mark tl"></div>
+      <div class="edge-mark tr"></div>
+      <div class="edge-mark bl"></div>
+      <div class="edge-mark br"></div>
+      <div class="home-content-box">
+        <img id="home-image" class="home-image" alt="Home featured image" />
+      </div>
+    </div>
+    
+  <!-- Debug Navigation -->
+  <div class="debug-nav-container">
+    <div class="launcher-group">
+      <button class="debug-nav-btn debug-logo-btn" id="launcher-btn" title="Launcher">
+        <i class="fa-solid fa-terminal launcher-icon" id="launcher-icon" aria-hidden="true"></i>
+      </button>
+      <div id="launcher-dropdown" class="theme-dropdown launcher-dropdown">
+        <div class="theme-dropdown-frame">
+          <div class="nav-frame">
+            <div class="nav-corner tl"></div>
+            <div class="nav-corner tr"></div>
+            <div class="nav-corner bl"></div>
+            <div class="nav-corner br"></div>
+          </div>
+          <div class="theme-dropdown-content">
+            <button class="theme-option" data-action="run">Run</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="debug-nav-btn debug-3-btn" id="debug-open-3menu">3</button>
+    <button class="debug-nav-btn debug-icon-btn menu-gear" id="debug-to-menu" title="Menu">
+      <i class="fa-solid fa-gear gear-icon" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="version-info" id="version-info" style="display: none;">
+    <div class="version-block">
+      <span class="version-label">OS</span>
+      <span class="version-value" id="version-os">--</span>
+    </div>
+    <div class="version-block">
+      <span class="version-label">SYS</span>
+      <span class="version-value" id="version-app">--</span>
+    </div>
+  </div>
+  </main>
+
+  <!-- Settings Menu Modal -->
+  <div class="menu-modal-overlay" id="menu-modal">
+    <div class="menu-modal-wrapper">
+      <div class="menu-modal" id="menu-content">
+        <div class="modal-corner tl"></div>
+        <div class="modal-corner tr"></div>
+        <div class="modal-corner bl"></div>
+        <div class="modal-corner br"></div>
+        <button class="about-close menu-close" id="menu-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="menu-drag-handle" id="menu-drag-handle" title="Double-click to toggle lock mode">
+          <div class="drag-line"></div>
+        </div>
+        <div class="menu-inner">
+          <div class="logo-section">
+            <h1 class="logo">SETTINGS</h1>
+            <p class="tagline">SELECT AN OPTION</p>
+          </div>
+
+          <div class="main-container">
+            <div class="stack-container">
+              <div class="card-stack" id="card-stack"></div>
+            </div>
+            
+            <div class="nav-container">
+              <div class="nav-frame">
+                <div class="nav-corner tl"></div>
+                <div class="nav-corner tr"></div>
+                <div class="nav-corner bl"></div>
+                <div class="nav-corner br"></div>
+              </div>
+              
+              <button class="nav-btn chamfer" id="nav-prev">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span>PREV</span>
+              </button>
+
+              <div class="nav-counter">
+                <span id="current-index">01</span> / <span id="total-count">00</span>
+              </div>
+
+              <button class="nav-btn chamfer" id="nav-next">
+                <span>NEXT</span>
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- About Modal -->
+  <div class="about-modal-overlay" id="about-modal">
+    <div class="about-modal-wrapper">
+      <div class="modal-corner tl"></div>
+      <div class="modal-corner tr"></div>
+      <div class="modal-corner bl"></div>
+      <div class="modal-corner br"></div>
+      <div class="about-modal">
+        <button class="about-close" id="about-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="about-logo-container">
+          <img class="about-logo-img" id="about-logo-img" src="" alt="Logo" style="display: none;">
+          <h2 class="about-logo-text" id="about-logo-text"></h2>
+        </div>
+        <p class="about-text" id="about-text"></p>
+        <div class="about-footer" id="about-footer" style="display: none;">
+          <div class="about-footer-line">
+            <span class="about-footer-label">System Version:</span>
+            <span class="about-footer-value" id="about-version"></span>
+          </div>
+          <div class="about-footer-line">
+            <span class="about-footer-label">Latest Build:</span>
+            <span class="about-footer-value" id="about-build-date"></span>
+          </div>
+          <div class="about-footer-url" id="about-url"></div>
+          <div class="about-footer-copyright" id="about-copyright"></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="image-modal-overlay" id="image-modal">
+    <div class="image-modal-wrapper">
+      <div class="modal-corner tl"></div>
+      <div class="modal-corner tr"></div>
+      <div class="modal-corner bl"></div>
+      <div class="modal-corner br"></div>
+      <div class="image-modal">
+        <button class="about-close image-close" id="image-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="image-modal-path" id="image-modal-path"></div>
+        <div class="image-modal-body">
+          <div class="image-frame">
+            <div class="image-frame-corner tl"></div>
+            <div class="image-frame-corner tr"></div>
+            <div class="image-frame-corner bl"></div>
+            <div class="image-frame-corner br"></div>
+            <img class="image-modal-img" id="image-modal-img" src="" alt="">
+          </div>
+        </div>
+        <div class="image-modal-caption" id="image-modal-caption"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3Menu Modal (Application Launcher) -->
+  <div class="menu3-modal-overlay" id="menu3-modal">
+    <div class="menu3-modal-wrapper">
+      <div class="menu3-modal" id="menu3-content">
+        <div class="modal-corner tl"></div>
+        <div class="modal-corner tr"></div>
+        <div class="modal-corner bl"></div>
+        <div class="modal-corner br"></div>
+        <button class="about-close menu3-close" id="menu3-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div class="menu3-drag-handle" id="menu3-drag-handle" title="Double-click to toggle lock mode">
+          <div class="drag-line"></div>
+        </div>
+        
+        <div class="menu3-inner">
+        <div class="menu3-header">
+          <div class="logo-section menu3-logo-section">
+            <h1 class="logo menu3-logo">Applications</h1>
+            <p class="tagline menu3-tagline">Select a program</p>
+          </div>
+        </div>
+        
+        <div class="menu3-main-container">
+          <div class="stack-container menu3-stack-container">
+            <div class="card-stack menu3-card-stack" id="menu3-card-stack"></div>
+          </div>
+          
+          <div class="nav-container menu3-nav-container">
+            <div class="nav-frame">
+              <div class="nav-corner tl"></div>
+              <div class="nav-corner tr"></div>
+              <div class="nav-corner bl"></div>
+              <div class="nav-corner br"></div>
+            </div>
+            
+            <button class="nav-btn chamfer" id="menu3-nav-prev">
+              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>PREV</span>
+            </button>
+            
+            <div class="nav-counter">
+              <span id="menu3-current-index">01</span> / <span id="menu3-total-count">00</span>
+            </div>
+            
+            <button class="nav-btn chamfer" id="menu3-nav-next">
+              <span>NEXT</span>
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Info Modal -->
+  <div class="system-modal-overlay" id="system-info-modal">
+    <div class="about-modal-wrapper">
+      <div class="modal-corner tl"></div>
+      <div class="modal-corner tr"></div>
+      <div class="modal-corner bl"></div>
+      <div class="modal-corner br"></div>
+      <div class="system-modal">
+        <button class="about-close system-close" id="system-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="about-logo-container system-logo-container">
+          <img class="about-logo-img system-logo-img" id="system-logo-img" src="static/image/windows-logo.png" alt="System logo">
+          <h2 class="about-logo-text system-logo-text" id="system-title">SYSTEM INFO</h2>
+        </div>
+        <div class="system-info-meta" id="system-info-meta"></div>
+        <div class="system-info-list" id="system-info-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3Menu Run Modal -->
+  <div class="menu3run-modal-overlay" id="menu3run-modal">
+    <div class="menu3run-modal-wrapper">
+      <div class="menu3run-modal" id="menu3run-content">
+        <div class="modal-corner tl"></div>
+        <div class="modal-corner tr"></div>
+        <div class="modal-corner bl"></div>
+        <div class="modal-corner br"></div>
+        <button class="about-close menu3run-close" id="menu3run-close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="menu3run-drag-handle" id="menu3run-drag-handle" title="Drag to move">
+          <div class="drag-line"></div>
+        </div>
+
+        <div class="menu3run-inner">
+          <div class="menu3run-card">
+            <div class="menu3run-panel">
+              <div class="menu3run-row">
+                <label class="menu3run-label" for="menu3run-input">Open</label>
+                <input class="menu3run-input" id="menu3run-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type a command or path" aria-label="Run command">
+              </div>
+              <div class="menu3run-actions">
+                <button class="menu3run-btn menu3run-primary" id="menu3run-run">Run</button>
+                <button class="menu3run-btn" id="menu3run-cancel">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer (underneath taskbar area) -->
+  <div class="footer-bar"></div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-3d">3D</button>
+    <button class="mode-btn" id="mode-regular">IMAGE</button>
+  </div>
+
+  <script type="module" src="static/js/main.js"></script>
+</body>
+</html>

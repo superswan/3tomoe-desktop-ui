@@ -1,0 +1,22 @@
+{
+  "bgColor": "#144b9f",
+  "bgDarken": 1.2,
+  "gradStrength": 1,
+  "waveMix": 0.815,
+  "waveContrast": 0.453,
+  "waveTint": "#5092c3",
+  "waveBoost": 0.28,
+  "dustEnabled": true,
+  "dustAmount": 0.3925,
+  "daveHoskins": true,
+  "cardsVisible": true,
+  "statusLineOpaque": false,
+  "statusLineAlpha": 0.33,
+  "statusLineBorders": false,
+  "statusLineCorners": false,
+  "statusLineElementBoxes": false,
+  "statusLineElementBg": false,
+  "statusLineElementBgAlpha": 0.33,
+  "uiAccentPreset": "white",
+  "name": "corpo blue"
+}

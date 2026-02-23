@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3 Tomoe Config Manager</title>
+    <link rel="stylesheet" href="static/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            3 Tomoe Config Manager
+            <div class="header-controls">
+                <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                    <span id="theme-icon">☀</span>
+                </button>
+                <span class="live-indicator">Live Edit Mode</span>
+            </div>
+        </h1>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="site">Site Info</button>
+            <button class="tab" data-tab="background">Background</button>
+            <button class="tab" data-tab="menu">Menu Commands</button>
+            <button class="tab" data-tab="applications">Applications</button>
+            <button class="tab" data-tab="presets">Presets</button>
+            <button class="tab" data-tab="quickmenu">Quick Menu</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </div>
+        
+        <!-- Site Info Tab -->
+        <div id="tab-site" class="tab-content active">
+            <div class="section">
+                <div class="section-title">Site Configuration</div>
+                <div class="field">
+                    <label>Logo Text</label>
+                    <input type="text" id="site-logo" placeholder="3 TOMOE">
+                </div>
+                <div class="field">
+                    <label>Logo Image</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <img id="logo-preview" src="" alt="Logo preview" style="width: 60px; height: 60px; object-fit: contain; background: var(--bg-input); border: 1px solid var(--border-input); display: none;">
+                        <div style="flex: 1;">
+                            <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                            <button class="btn" id="btn-upload-logo" style="width: 100%; margin-bottom: 8px;">+ Upload Logo Image</button>
+                            <button class="btn btn-danger" id="btn-remove-logo" style="width: 100%; display: none;">Remove Logo</button>
+                            <div style="margin-top: 8px;">
+                                <label class="toggle-switch" style="font-size: 11px; text-transform: none; letter-spacing: 0.05em; color: var(--text-muted);">
+                                    <input type="checkbox" id="logo-invert">
+                                    <span>Invert colors (black → white)</span>
+                                </label>
+                            </div>
+                            <small style="color: var(--text-muted); display: block; margin-top: 4px;">Upload an image to display in the About modal alongside text logo</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Home Featured Image</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <img id="home-image-preview" src="" alt="Home image preview" style="width: 120px; height: 80px; object-fit: cover; background: var(--bg-input); border: 1px solid var(--border-input); display: none;">
+                        <div style="flex: 1;">
+                            <input type="file" id="home-image-upload" accept="image/*" style="display: none;">
+                            <button class="btn" id="btn-upload-home-image" style="width: 100%; margin-bottom: 8px;">+ Upload Home Image</button>
+                            <button class="btn btn-danger" id="btn-remove-home-image" style="width: 100%; display: none;">Remove Home Image</button>
+                            <small style="color: var(--text-muted); display: block; margin-top: 4px;">Upload an image to feature in the home box</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Home Image Opacity</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="range" id="home-image-opacity" min="0.1" max="1" step="0.05" style="flex: 1;">
+                        <span id="home-image-opacity-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">75%</span>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">Adjust transparency of the home image</small>
+                </div>
+                <div class="field">
+                    <label>Home Image Fit</label>
+                    <select id="home-image-fit">
+                        <option value="cover">Cover (Crop)</option>
+                        <option value="contain">Contain (No Crop)</option>
+                    </select>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">Choose how the image fits inside the home box</small>
+                </div>
+                <div class="field">
+                    <label>Home Image Crop</label>
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <span style="min-width: 36px; color: var(--text-muted);">X</span>
+                            <input type="range" id="home-image-crop-x" min="0" max="100" step="1" style="flex: 1;">
+                            <span id="home-image-crop-x-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">50%</span>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <span style="min-width: 36px; color: var(--text-muted);">Y</span>
+                            <input type="range" id="home-image-crop-y" min="0" max="100" step="1" style="flex: 1;">
+                            <span id="home-image-crop-y-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">50%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Home Image Zoom</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="range" id="home-image-zoom" min="1" max="2" step="0.01" style="flex: 1;">
+                        <span id="home-image-zoom-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">100%</span>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">Zoom and reposition to crop the image</small>
+                </div>
+                <div class="field">
+                    <label>Tagline</label>
+                    <input type="text" id="site-tagline" placeholder="Project Archive">
+                </div>
+                <div class="field">
+                    <label>About Text</label>
+                    <textarea id="site-about" placeholder="Description about your site..."></textarea>
+                </div>
+                <div class="section-title" style="margin-top: 24px;">About Panel Footer</div>
+                <div class="field">
+                    <label>System Version</label>
+                    <input type="text" id="site-version" placeholder="1.0.0">
+                </div>
+                <div class="field">
+                    <label>Latest Build Date</label>
+                    <input type="text" id="site-build-date" placeholder="2024.01.15">
+                </div>
+                <div class="field">
+                    <label>Website URL</label>
+                    <input type="text" id="site-url" placeholder="www.example.com">
+                </div>
+                <div class="field">
+                    <label>Copyright Text</label>
+                    <input type="text" id="site-copyright" placeholder="Company Corporation LLC All Rights Reserved">
+                </div>
+                <div class="field">
+                    <label>Show About Card</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="show-about">
+                        <span>Display About as last card in project list</span>
+                    </div>
+                </div>
+<button class="btn btn-primary" id="btn-save-site">Save Site Info</button>
+            </div>
+        </div>
+        
+        <!-- Background Tab -->
+        <div id="tab-background" class="tab-content">
+            <div class="section">
+                <div class="section-title">Image Mode Background</div>
+                <div class="field">
+                    <label>Background Media</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <div id="bg-preview-container" style="width: 160px; height: 90px; background: var(--bg-input); border: 1px solid var(--border-input); display: none; position: relative; overflow: hidden;">
+                            <img id="bg-preview" src="" alt="Background preview" style="width: 100%; height: 100%; object-fit: cover;">
+                            <video id="bg-video-preview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" muted loop></video>
+                        </div>
+                        <div style="flex: 1;">
+                            <input type="file" id="bg-upload" accept="image/*,video/*" style="display: none;">
+                            <button class="btn" id="btn-upload-bg" style="width: 100%; margin-bottom: 8px;">+ Upload Background</button>
+                            <button class="btn btn-danger" id="btn-remove-bg" style="width: 100%; display: none;">Remove Background</button>
+                            <small style="color: var(--text-muted); display: block; margin-top: 4px;">Image or video shown in Image mode. 3D mode always uses shader.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Background Library</div>
+                <div class="field">
+                    <label>Add Library Entry</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="bg-library-name" placeholder="Display name" style="flex: 1; min-width: 200px;">
+                        <select id="bg-library-fit" style="min-width: 180px;">
+                            <option value="cover">Cover (Fill & Crop)</option>
+                            <option value="contain">Contain (Fit)</option>
+                            <option value="fill">Fill (Stretch)</option>
+                            <option value="none">None (Actual Size)</option>
+                        </select>
+                        <input type="file" id="bg-library-upload" accept="image/*,video/*" style="display: none;">
+                        <button class="btn" id="btn-upload-bg-library">+ Upload to Library</button>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 6px;">Uploads media to static/background and adds it to backgroundLibrary.</small>
+                </div>
+                <div id="bg-library-list"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Background Settings</div>
+                <div class="field">
+                    <label>Fit Mode</label>
+                    <select id="bg-fit">
+                        <option value="cover">Cover (Fill & Crop)</option>
+                        <option value="contain">Contain (Fit)</option>
+                        <option value="fill">Fill (Stretch)</option>
+                        <option value="none">None (Actual Size)</option>
+                    </select>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">How the background fills the screen</small>
+                </div>
+                <div class="field">
+                    <label>Position</label>
+                    <select id="bg-position">
+                        <option value="center">Center</option>
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                        <option value="top left">Top Left</option>
+                        <option value="top right">Top Right</option>
+                        <option value="bottom left">Bottom Left</option>
+                        <option value="bottom right">Bottom Right</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Opacity</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="range" id="bg-opacity" min="0" max="1" step="0.05" style="flex: 1;">
+                        <span id="bg-opacity-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">100%</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Blur</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="range" id="bg-blur" min="0" max="50" step="1" style="flex: 1;">
+                        <span id="bg-blur-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">0px</span>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">Apply blur effect to background</small>
+                </div>
+                <div class="field">
+                    <label>Scale</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="range" id="bg-scale" min="0.5" max="2" step="0.05" style="flex: 1;">
+                        <span id="bg-scale-value" style="min-width: 48px; text-align: right; color: var(--text-muted);">100%</span>
+                    </div>
+                </div>
+                <div class="field" id="bg-video-options" style="display: none;">
+                    <label>Video Options</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="bg-video-loop" checked>
+                        <span>Loop video</span>
+                    </div>
+                    <div class="toggle-switch" style="margin-top: 8px;">
+                        <input type="checkbox" id="bg-video-muted" checked>
+                        <span>Mute audio</span>
+                    </div>
+                    <div class="toggle-switch" style="margin-top: 8px;">
+                        <input type="checkbox" id="bg-video-autoplay" checked>
+                        <span>Autoplay</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Image Mode Layout</div>
+                <div class="field">
+                    <label>Header & Status Position</label>
+                    <select id="bg-header-position">
+                        <option value="low">Low (bottom area)</option>
+                        <option value="med">Medium (centered)</option>
+                        <option value="high">High (top area)</option>
+                    </select>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">Position of logo, tagline, and status line in Image mode</small>
+                </div>
+                <button class="btn btn-primary" id="btn-save-background">Save Settings</button>
+            </div>
+        </div>
+        
+        <!-- Menu Tab -->
+        <div id="tab-menu" class="tab-content">
+            <div class="section">
+                <div class="section-title">
+                    Menu Commands
+                    <span id="menu-count" style="color: #666; font-weight: normal;">(0)</span>
+                </div>
+                <div id="menu-list"></div>
+                <button class="btn btn-add" id="btn-add-menu">+ Add Menu Command</button>
+            </div>
+        </div>
+        
+        <!-- Presets Tab -->
+        <div id="tab-presets" class="tab-content">
+            <div class="section">
+                <div class="section-title">Upload New Preset</div>
+                <div class="field">
+                    <label>Select Preset JSON File</label>
+                    <input type="file" id="preset-upload" accept=".json" style="display: none;">
+                    <button class="btn" id="btn-upload-preset" style="width: 100%; margin-bottom: 8px;">+ Upload Preset File</button>
+                    <small style="color: #666; display: block;">Upload a preset JSON file to add it to the presets folder and config</small>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Preset Mappings</div>
+                <div id="presets-list"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Available Preset Files</div>
+                <div id="preset-files-list"></div>
+            </div>
+        </div>
+        
+        <!-- Applications Tab -->
+        <div id="tab-applications" class="tab-content">
+            <div class="section">
+                <div class="section-title">
+                    Application Shortcuts
+                    <span id="app-count" style="color: #666; font-weight: normal;">(0)</span>
+                </div>
+                <div id="applications-list"></div>
+                <button class="btn btn-add" id="btn-add-application">+ Add Application</button>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="tab-quickmenu" class="tab-content">
+            <div class="section">
+                <div class="section-title">Overlay Quick Menu</div>
+                <small style="color: #666; display: block; margin-bottom: 14px;">Configure the actions shown when pressing Alt+tilde while Settings is already open in overlay mode.</small>
+                <div id="quickmenu-list"></div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+                    <button class="btn" id="btn-add-quickmenu">+ Add Quick Menu Item</button>
+                    <button class="btn" id="btn-reset-quickmenu">Reset to Defaults</button>
+                    <button class="btn btn-primary" id="btn-save-quickmenu">Save Quick Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="tab-content">
+            <div class="section">
+                <div class="section-title">Developer Settings</div>
+                <div class="field">
+                    <label>Developer Mode</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="setting-devmode">
+                        <span>Enable developer panel in main site</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Default Preset</label>
+                    <select id="setting-default-preset">
+                        <option value="">-- Select default --</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Developer Panel</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn" id="btn-reset-dev-settings">Reset Developer Panel Settings</button>
+                    </div>
+                    <small style="color: #666; display: block;">Clears persisted developer panel settings stored in config.json.</small>
+                </div>
+                <div class="field">
+                    <label>Resource Links Alignment</label>
+                    <select id="setting-resource-links-align">
+                        <option value="right">Right</option>
+                        <option value="left">Left</option>
+                    </select>
+                    <small style="color: #666; display: block;">Align resource link icons within cards</small>
+                </div>
+                <div class="field">
+                    <label>Resource Links Footer</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="setting-resource-links-footer" checked>
+                        <span>Always show resource links footer with horizontal separator</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Account for Windows Version Info</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="setting-windows-version-info">
+                        <span>Move mode selector up to clear taskbar/version text</span>
+                    </div>
+                </div>
+                <div class="section-title" style="margin-top: 24px;">Weather</div>
+                <div class="field">
+                    <label>API Base</label>
+                    <input type="text" id="setting-weather-api-base" placeholder="http://localhost:5055">
+                    <small style="color: #666; display: block;">Local API base for weather requests</small>
+                </div>
+                <div class="field">
+                    <label>Units</label>
+                    <select id="setting-weather-units">
+                        <option value="fahrenheit">Fahrenheit</option>
+                        <option value="celsius">Celsius</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Location Label</label>
+                    <input type="text" id="setting-weather-label" placeholder="San Francisco, CA">
+                </div>
+                <div class="field">
+                    <label>Display Location Name</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="setting-weather-use-location-names">
+                        <span>Use city/location label instead of lat/long in Sense widget</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Latitude / Longitude</label>
+                    <div class="weather-coordinates">
+                        <input type="text" id="setting-weather-lat" placeholder="37.7749">
+                        <input type="text" id="setting-weather-lon" placeholder="-122.4194">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Pick on Map</label>
+                    <div id="weather-map" class="weather-map"></div>
+                    <small style="color: #666; display: block;">Click the map to set coordinates</small>
+                </div>
+                <div class="section-title" style="margin-top: 24px;">Run Commands</div>
+                <div class="field">
+                    <label>Allow Any Command</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="setting-run-any">
+                        <span>Permit any command from the UI</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Allowed Commands (one per line)</label>
+                    <textarea id="setting-allowed-commands" placeholder="notepad\ncode\nC:\\Program Files\\App\\app.exe"></textarea>
+                    <small style="color: #666; display: block;">If Allow Any Command is off, only these (plus configured applications) will run.</small>
+                </div>
+                <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <div class="status-bar">
+        <span id="status-message">Ready</span>
+        <span id="last-saved">Never saved</span>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // API Base URL
+        const API_URL = '';
+        
+        // State
+        let config = null;
+        let menu = [];
+        let presets = [];
+        let applications = [];
+        let backgroundLibrary = [];
+        let weatherMap = null;
+        let weatherMarker = null;
+        const quickMenuScriptPrefix = 'powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "scripts\\';
+
+        const defaultQuickMenuItems = [
+            {
+                id: 'restart_explorer',
+                title: 'Restart Explorer',
+                command: `${quickMenuScriptPrefix}restart_explorer.ps1"`,
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            },
+            {
+                id: 'reset_gpu_driver',
+                title: 'Reset GPU Driver',
+                command: `${quickMenuScriptPrefix}reset_gpu_driver.ps1"`,
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            },
+            {
+                id: 'minimize_all_windows',
+                title: 'Minimize All Windows',
+                command: `${quickMenuScriptPrefix}minimize_all_windows.ps1"`,
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            },
+            {
+                id: 'close_all_windows',
+                title: 'Close All Windows',
+                command: `${quickMenuScriptPrefix}close_all_windows.ps1"`,
+                enabled: true,
+                confirm: true,
+                confirmText: 'Close all windows? Unsaved work may be lost.'
+            },
+            {
+                id: 'toggle_taskbar',
+                title: 'Toggle Taskbar',
+                command: `${quickMenuScriptPrefix}toggle_taskbar.ps1"`,
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            },
+            {
+                id: 'task_manager',
+                title: 'Task Manager',
+                command: `${quickMenuScriptPrefix}open_task_manager.ps1"`,
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            }
+        ];
+        
+        // Toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Status bar
+        function updateStatus(message, isError = false) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'status-error' : 'status-success';
+        }
+        
+        function updateLastSaved() {
+            const now = new Date();
+            document.getElementById('last-saved').textContent = 
+                'Last saved: ' + now.toLocaleTimeString();
+        }
+
+        function parseNumber(value) {
+            const num = parseFloat(value);
+            return Number.isFinite(num) ? num : null;
+        }
+
+        function ensureWeatherMap() {
+            const mapEl = document.getElementById('weather-map');
+            if (!mapEl || !window.L) return;
+            if (!weatherMap) {
+                weatherMap = L.map(mapEl, { zoomControl: true, attributionControl: false });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(weatherMap);
+                weatherMap.setView([20, 0], 2);
+                weatherMap.on('click', (e) => {
+                    setWeatherInputs(e.latlng.lat, e.latlng.lng, true);
+                });
+            }
+            setTimeout(() => weatherMap.invalidateSize(), 0);
+        }
+
+        function updateWeatherMarker(lat, lon, pan = false) {
+            if (!weatherMap || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
+            if (!weatherMarker) {
+                weatherMarker = L.marker([lat, lon]).addTo(weatherMap);
+            } else {
+                weatherMarker.setLatLng([lat, lon]);
+            }
+            if (pan) {
+                const nextZoom = Math.max(weatherMap.getZoom(), 8);
+                weatherMap.setView([lat, lon], nextZoom);
+            }
+        }
+
+        function setWeatherInputs(lat, lon, updateMap) {
+            const latInput = document.getElementById('setting-weather-lat');
+            const lonInput = document.getElementById('setting-weather-lon');
+            if (latInput) latInput.value = Number.isFinite(lat) ? lat.toFixed(5) : '';
+            if (lonInput) lonInput.value = Number.isFinite(lon) ? lon.toFixed(5) : '';
+            if (updateMap) updateWeatherMarker(lat, lon, true);
+        }
+
+        function syncWeatherMarkerFromInputs() {
+            const lat = parseNumber(document.getElementById('setting-weather-lat')?.value);
+            const lon = parseNumber(document.getElementById('setting-weather-lon')?.value);
+            if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                updateWeatherMarker(lat, lon, false);
+            }
+        }
+        
+        // Load config
+        async function loadConfig() {
+            try {
+                updateStatus('Loading...');
+                const response = await fetch(`${API_URL}/api/config`);
+                const data = await response.json();
+                
+                // Check if response contains error
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                config = data;
+                menu = config.menu || [];
+                presets = config.presets || [];
+                applications = config.applications || [];
+                backgroundLibrary = config.backgroundLibrary || [];
+                
+                renderSiteInfo();
+                renderBackground();
+                renderMenu();
+                renderPresets();
+                renderApplications();
+                renderQuickMenu();
+                renderSettings();
+
+                const savedActiveTab = localStorage.getItem(ADMIN_ACTIVE_TAB_KEY) || 'site';
+                activateTab(savedActiveTab, false);
+                
+                updateStatus('Ready');
+            } catch (err) {
+                console.error('Config load error:', err);
+                updateStatus('Error: ' + err.message, true);
+                showToast('Failed to load config: ' + err.message, true);
+            }
+        }
+        
+        // Render site info
+        function renderSiteInfo() {
+            try {
+                console.log('Rendering site info:', config);
+                document.getElementById('site-logo').value = config.logo || '';
+                document.getElementById('site-tagline').value = config.tagline || '';
+                document.getElementById('site-about').value = config.about || '';
+                document.getElementById('site-version').value = config.version || '';
+                document.getElementById('site-build-date').value = config.buildDate || '';
+                document.getElementById('site-url').value = config.siteUrl || '';
+                document.getElementById('site-copyright').value = config.copyright || '';
+                document.getElementById('show-about').checked = config.showAbout !== false;
+                
+                // Logo image
+                const logoPreview = document.getElementById('logo-preview');
+                const removeBtn = document.getElementById('btn-remove-logo');
+                const logoInvert = document.getElementById('logo-invert');
+                if (config.logoImage) {
+                    logoPreview.src = config.logoImage;
+                    logoPreview.style.display = 'block';
+                    removeBtn.style.display = 'inline-flex';
+                    if (config.logoInvert) {
+                        logoPreview.style.filter = 'invert(1)';
+                    } else {
+                        logoPreview.style.filter = 'none';
+                    }
+                } else {
+                    logoPreview.style.display = 'none';
+                    removeBtn.style.display = 'none';
+                }
+                logoInvert.checked = config.logoInvert || false;
+                
+                // Home image
+                const homeImagePreview = document.getElementById('home-image-preview');
+                const homeImageRemoveBtn = document.getElementById('btn-remove-home-image');
+                if (config.homeImage) {
+                    homeImagePreview.src = config.homeImage;
+                    homeImagePreview.style.display = 'block';
+                    homeImageRemoveBtn.style.display = 'inline-flex';
+                } else {
+                    homeImagePreview.style.display = 'none';
+                    homeImageRemoveBtn.style.display = 'none';
+                }
+                const homeImageOpacityInput = document.getElementById('home-image-opacity');
+                const homeImageOpacityValue = document.getElementById('home-image-opacity-value');
+                const homeImageFitSelect = document.getElementById('home-image-fit');
+                const opacity = typeof config.homeImageOpacity === 'number' ? config.homeImageOpacity : 0.75;
+                const fit = config.homeImageFit || 'cover';
+                if (homeImageOpacityInput) {
+                    homeImageOpacityInput.value = opacity;
+                }
+                if (homeImageOpacityValue) {
+                    homeImageOpacityValue.textContent = Math.round(opacity * 100) + '%';
+                }
+                if (homeImageFitSelect) {
+                    homeImageFitSelect.value = fit;
+                }
+                if (homeImagePreview) {
+                    homeImagePreview.style.opacity = opacity;
+                    homeImagePreview.style.objectFit = fit;
+                }
+                const cropXInput = document.getElementById('home-image-crop-x');
+                const cropYInput = document.getElementById('home-image-crop-y');
+                const cropXValue = document.getElementById('home-image-crop-x-value');
+                const cropYValue = document.getElementById('home-image-crop-y-value');
+                const zoomInput = document.getElementById('home-image-zoom');
+                const zoomValue = document.getElementById('home-image-zoom-value');
+                const cropX = typeof config.homeImageCropX === 'number' ? config.homeImageCropX : 50;
+                const cropY = typeof config.homeImageCropY === 'number' ? config.homeImageCropY : 50;
+                const zoom = typeof config.homeImageZoom === 'number' ? config.homeImageZoom : 1.0;
+                if (cropXInput) cropXInput.value = cropX;
+                if (cropYInput) cropYInput.value = cropY;
+                if (cropXValue) cropXValue.textContent = cropX + '%';
+                if (cropYValue) cropYValue.textContent = cropY + '%';
+                if (zoomInput) zoomInput.value = zoom;
+                if (zoomValue) zoomValue.textContent = Math.round(zoom * 100) + '%';
+                if (homeImagePreview) {
+                    homeImagePreview.style.objectPosition = `${cropX}% ${cropY}%`;
+                    homeImagePreview.style.transform = `scale(${zoom})`;
+                    homeImagePreview.style.transformOrigin = `${cropX}% ${cropY}%`;
+                }
+            } catch (err) {
+                console.error('Error in renderSiteInfo:', err);
+            }
+        }
+        
+        // Render menu
+        function renderMenu() {
+            try {
+                console.log('Rendering menu:', menu);
+                const container = document.getElementById('menu-list');
+                document.getElementById('menu-count').textContent = `(${menu.length})`;
+                
+                // Ensure all menu items have IDs for drag-and-drop
+                menu.forEach((item, i) => {
+                    if (!item.id) {
+                        item.id = 'menu_' + i + '_' + Date.now();
+                    }
+                });
+            
+            container.innerHTML = menu.map((item, i) => `
+                <div class="project-card" data-index="${i}">
+                    <div class="project-card-header">
+                        <span class="project-num">${String(i + 1).padStart(2, '0')}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn" onclick="moveMenuItem(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#x25B2;</button>
+                            <button class="btn" onclick="moveMenuItem(${i}, 1)" ${i === menu.length - 1 ? 'disabled' : ''} title="Move down">&#x25BC;</button>
+                            <button class="btn btn-danger" onclick="deleteMenuItem(${i})" style="margin: 0;">Remove</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Title</label>
+                        <input type="text" class="menu-title" data-index="${i}" value="${escapeHtml(item.title || '')}">
+                    </div>
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea class="menu-desc" data-index="${i}">${escapeHtml(item.desc || '')}</textarea>
+                    </div>
+                    <div class="field">
+                        <label>Command</label>
+                        <input type="text" class="menu-command" data-index="${i}" value="${escapeHtml(item.command || item.url || '')}" placeholder="e.g., code, notepad, /path/to/app">
+                    </div>
+                </div>
+            `).join('');
+            
+            // Bind input events
+            container.querySelectorAll('.menu-title, .menu-desc, .menu-command').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const idx = e.target.dataset.index;
+                    const key = e.target.className.replace('menu-', '');
+                    menu[idx][key] = e.target.value;
+                    saveMenu();
+                });
+            });
+            } catch (err) {
+                console.error('Error in renderMenu:', err);
+            }
+        }
+        
+        // Move menu item up or down
+        function moveMenuItem(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= menu.length) return;
+            
+            // Swap menu items
+            const temp = menu[index];
+            menu[index] = menu[newIndex];
+            menu[newIndex] = temp;
+            
+            renderMenu();
+            saveMenu();
+            showToast('Order updated');
+        }
+        
+        // Render applications
+        function renderApplications() {
+            try {
+                console.log('Rendering applications:', applications);
+                const container = document.getElementById('applications-list');
+                document.getElementById('app-count').textContent = `(${applications.length})`;
+                
+                // Ensure all applications have IDs
+                applications.forEach((app, i) => {
+                    if (!app.id) {
+                        app.id = 'app_' + i + '_' + Date.now();
+                    }
+                });
+            
+            container.innerHTML = applications.map((app, i) => `
+                <div class="project-card" data-index="${i}">
+                    <div class="project-card-header">
+                        <span class="project-num">${String(i + 1).padStart(2, '0')}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn" onclick="moveApplication(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#x25B2;</button>
+                            <button class="btn" onclick="moveApplication(${i}, 1)" ${i === applications.length - 1 ? 'disabled' : ''} title="Move down">&#x25BC;</button>
+                            <button class="btn btn-danger" onclick="deleteApplication(${i})" style="margin: 0;">Remove</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Application Name</label>
+                        <input type="text" class="app-name" data-index="${i}" value="${escapeHtml(app.name || '')}">
+                    </div>
+                    <div class="field">
+                        <label>Description</label>
+                        <input type="text" class="app-description" data-index="${i}" value="${escapeHtml(app.description || '')}" placeholder="Brief description of the application">
+                    </div>
+                    <div class="field">
+                        <label>Command</label>
+                        <input type="text" class="app-command" data-index="${i}" value="${escapeHtml(app.command || '')}" placeholder="e.g., code, notepad, /path/to/app">
+                    </div>
+                </div>
+            `).join('');
+            
+            // Bind input events
+            container.querySelectorAll('.app-name, .app-description, .app-command').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const idx = e.target.dataset.index;
+                    const key = e.target.className.replace('app-', '');
+                    applications[idx][key] = e.target.value;
+                    saveApplications();
+                });
+            });
+            } catch (err) {
+                console.error('Error in renderApplications:', err);
+            }
+        }
+        
+        // Move application up or down
+        function moveApplication(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= applications.length) return;
+            
+            // Swap applications
+            const temp = applications[index];
+            applications[index] = applications[newIndex];
+            applications[newIndex] = temp;
+            
+            renderApplications();
+            saveApplications();
+            showToast('Order updated');
+        }
+        
+        // Render presets
+        function renderPresets() {
+            try {
+                console.log('Rendering presets:', presets);
+                const container = document.getElementById('presets-list');
+                container.innerHTML = presets.length === 0 
+                    ? '<p style="color: #666; font-size: 13px;">No presets mapped. Upload preset files below.</p>'
+                    : presets.map((p, i) => `
+                        <div class="preset-item" data-index="${i}">
+                            <div class="preset-info">
+                                <input type="text" class="library-name-input preset-name-input" data-index="${i}" value="${escapeHtml(p.name)}" placeholder="Preset name">
+                                <span class="preset-file">${escapeHtml(p.file)}</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn" onclick="movePreset(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#x25B2;</button>
+                                <button class="btn" onclick="movePreset(${i}, 1)" ${i === presets.length - 1 ? 'disabled' : ''} title="Move down">&#x25BC;</button>
+                                <button class="btn btn-danger" onclick="removePreset('${p.id}')" style="margin: 0;">Remove</button>
+                            </div>
+                        </div>
+                    `).join('');
+                
+                // Bind preset name input events
+                container.querySelectorAll('.preset-name-input').forEach((input) => {
+                    input.addEventListener('change', async (e) => {
+                        const idx = parseInt(e.target.dataset.index, 10);
+                        if (!Number.isFinite(idx)) return;
+                        const newName = e.target.value.trim();
+                        const preset = presets[idx];
+                        if (!preset || newName === preset.name) return;
+                        
+                        try {
+                            const response = await fetch(`${API_URL}/api/presets/${preset.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name: newName })
+                            });
+                            
+                            if (response.ok) {
+                                preset.name = newName;
+                                showToast('Preset renamed');
+                                renderSettings();
+                            } else {
+                                throw new Error('Failed to rename');
+                            }
+                        } catch (err) {
+                            showToast('Failed to rename preset', true);
+                            e.target.value = preset.name;
+                        }
+                    });
+                });
+                
+                loadPresetFiles();
+            } catch (err) {
+                console.error('Error in renderPresets:', err);
+            }
+        }
+        
+        // Move preset up or down
+        async function movePreset(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= presets.length) return;
+            
+            // Swap presets
+            const temp = presets[index];
+            presets[index] = presets[newIndex];
+            presets[newIndex] = temp;
+            
+            // Save new order
+            try {
+                const newOrder = presets.map(p => p.id);
+                const response = await fetch(`${API_URL}/api/presets/reorder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: newOrder })
+                });
+                
+                if (response.ok) {
+                    renderPresets();
+                    renderSettings();
+                    showToast('Preset order updated');
+                } else {
+                    throw new Error('Failed to save order');
+                }
+            } catch (err) {
+                showToast('Failed to update order', true);
+                // Reload to get correct order
+                config = await (await fetch(`${API_URL}/api/config`)).json();
+                presets = config.presets || [];
+                renderPresets();
+            }
+        }
+        
+        // Load and display preset files
+        async function loadPresetFiles() {
+            try {
+                const response = await fetch(`${API_URL}/api/preset-files`);
+                const files = await response.json();
+                const container = document.getElementById('preset-files-list');
+                
+                const mappedIds = new Set(presets.map(p => p.id));
+                
+                container.innerHTML = files.map(f => `
+                    <div class="preset-item">
+                        <div class="preset-info">
+                            <span class="preset-name">${escapeHtml(f.name)}</span>
+                            <span class="preset-file">${escapeHtml(f.filename)}</span>
+                        </div>
+                        ${mappedIds.has(f.id) 
+                            ? '<span style="color: #4a9; font-size: 11px;">Mapped</span>'
+                            : `<div style="display: flex; gap: 8px; align-items: center;"><button class="btn btn-primary" onclick="addPresetMapping('${f.id}', '${escapeHtml(f.name)}', '${f.filename}')" style="margin: 0;">Add to Config</button><button class="btn btn-danger" onclick="deletePresetFile('${encodeURIComponent(f.filename)}')" style="margin: 0;">Delete File</button></div>`
+                        }
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load preset files:', err);
+            }
+        }
+        
+        // Render settings
+        function renderSettings() {
+            try {
+                console.log('Rendering settings:', config);
+                document.getElementById('setting-devmode').checked = config.devMode || false;
+                document.getElementById('setting-resource-links-align').value = config.resourceLinksAlign || 'right';
+                document.getElementById('setting-resource-links-footer').checked = config.resourceLinksFooter !== false;
+                document.getElementById('setting-windows-version-info').checked = config.accountForWindowsVersionInfo === true;
+
+                const weather = (config && config.weather) ? config.weather : {};
+                const weatherApiBase = document.getElementById('setting-weather-api-base');
+                const weatherUnits = document.getElementById('setting-weather-units');
+                const weatherLabel = document.getElementById('setting-weather-label');
+                const weatherUseLocationNames = document.getElementById('setting-weather-use-location-names');
+                const weatherLat = document.getElementById('setting-weather-lat');
+                const weatherLon = document.getElementById('setting-weather-lon');
+                const runAny = document.getElementById('setting-run-any');
+                const allowedCommands = document.getElementById('setting-allowed-commands');
+
+                if (weatherApiBase) weatherApiBase.value = weather.apiBase || '';
+                if (weatherUnits) weatherUnits.value = weather.units || 'fahrenheit';
+                if (weatherLabel) weatherLabel.value = weather.label || '';
+                if (weatherUseLocationNames) weatherUseLocationNames.checked = weather.useLocationNames === true;
+
+                const latValue = weather.latitude ?? weather.lat ?? '';
+                const lonValue = weather.longitude ?? weather.lon ?? '';
+                if (weatherLat) weatherLat.value = latValue !== null && latValue !== undefined ? latValue : '';
+                if (weatherLon) weatherLon.value = lonValue !== null && lonValue !== undefined ? lonValue : '';
+
+                if (runAny) runAny.checked = config.runAnyCommand === true;
+                if (allowedCommands) {
+                    const allowed = Array.isArray(config.allowedRunCommands) ? config.allowedRunCommands : [];
+                    allowedCommands.value = allowed.join('\\n');
+                }
+
+                ensureWeatherMap();
+                const latNum = parseNumber(weatherLat?.value);
+                const lonNum = parseNumber(weatherLon?.value);
+                if (Number.isFinite(latNum) && Number.isFinite(lonNum)) {
+                    updateWeatherMarker(latNum, lonNum, true);
+                } else if (weatherMap && weatherMarker) {
+                    weatherMap.removeLayer(weatherMarker);
+                    weatherMarker = null;
+                }
+                
+                const select = document.getElementById('setting-default-preset');
+                select.innerHTML = '<option value="">-- Select default --</option>' +
+                    presets.map(p => `<option value="${p.id}" ${p.id === config.defaultPreset ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+            } catch (err) {
+                console.error('Error in renderSettings:', err);
+}
+        }
+
+        function getQuickMenuItems() {
+            const configured = config?.quickMenu?.items;
+            if (!Array.isArray(configured) || configured.length === 0) {
+                return defaultQuickMenuItems.map(item => ({ ...item }));
+            }
+
+            return configured
+                .filter(item => item && typeof item === 'object')
+                .map(item => ({
+                    id: String(item.id || '').trim(),
+                    title: String(item.title || '').trim(),
+                    command: String(item.command || '').trim(),
+                    enabled: item.enabled !== false,
+                    confirm: item.confirm === true,
+                    confirmText: String(item.confirmText || '').trim()
+                }))
+                .filter(item => item.id.length > 0);
+        }
+
+        function normalizeQuickMenuId(value) {
+            const normalized = String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9_\-\s]/g, '')
+                .replace(/\s+/g, '_');
+            return normalized || `quick_${Date.now()}`;
+        }
+
+        function ensureQuickMenuConfig() {
+            if (!config.quickMenu || typeof config.quickMenu !== 'object') {
+                config.quickMenu = {};
+            }
+            if (!Array.isArray(config.quickMenu.items)) {
+                config.quickMenu.items = getQuickMenuItems();
+            }
+        }
+
+        function renderQuickMenu() {
+            const container = document.getElementById('quickmenu-list');
+            if (!container || !config) return;
+
+            const items = getQuickMenuItems();
+            ensureQuickMenuConfig();
+            config.quickMenu.items = items;
+
+            container.innerHTML = items.map((item, i) => `
+                <div class="project-card" data-index="${i}">
+                    <div class="project-card-header">
+                        <span class="project-num">${String(i + 1).padStart(2, '0')}</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button class="btn quickmenu-move-up" data-index="${i}" style="margin: 0;" ${i === 0 ? 'disabled' : ''} title="Move up">&#x25B2;</button>
+                            <button class="btn quickmenu-move-down" data-index="${i}" style="margin: 0;" ${i === items.length - 1 ? 'disabled' : ''} title="Move down">&#x25BC;</button>
+                            <button class="btn btn-danger quickmenu-remove" data-index="${i}" style="margin: 0;">Remove</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>ID</label>
+                        <input type="text" class="quickmenu-id" data-index="${i}" value="${escapeHtml(item.id || '')}">
+                    </div>
+                    <div class="field">
+                        <label>Label</label>
+                        <input type="text" class="quickmenu-title" data-index="${i}" value="${escapeHtml(item.title || '')}">
+                    </div>
+                    <div class="field">
+                        <label>Command</label>
+                        <input type="text" class="quickmenu-command" data-index="${i}" value="${escapeHtml(item.command || '')}">
+                    </div>
+                    <div class="field">
+                        <div class="toggle-switch">
+                            <input type="checkbox" class="quickmenu-enabled" data-index="${i}" ${item.enabled !== false ? 'checked' : ''}>
+                            <span>Enabled</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="toggle-switch">
+                            <input type="checkbox" class="quickmenu-confirm" data-index="${i}" ${item.confirm ? 'checked' : ''}>
+                            <span>Ask confirmation before running</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Confirmation Text</label>
+                        <input type="text" class="quickmenu-confirm-text" data-index="${i}" value="${escapeHtml(item.confirmText || '')}" placeholder="Are you sure?">
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.quickmenu-remove').forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    syncQuickMenuFromDom();
+                    config.quickMenu.items.splice(idx, 1);
+                    renderQuickMenu();
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-move-up').forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx) || idx <= 0) return;
+                    syncQuickMenuFromDom();
+                    const items = config.quickMenu.items;
+                    [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
+                    renderQuickMenu();
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-move-down').forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    syncQuickMenuFromDom();
+                    const items = config.quickMenu.items;
+                    if (idx >= items.length - 1) return;
+                    [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
+                    renderQuickMenu();
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-id').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].id = normalizeQuickMenuId(e.target.value);
+                    renderQuickMenu();
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-title').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].title = e.target.value;
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-command').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].command = e.target.value;
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-enabled').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].enabled = e.target.checked;
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-confirm').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].confirm = e.target.checked;
+                });
+            });
+
+            container.querySelectorAll('.quickmenu-confirm-text').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.quickMenu.items[idx].confirmText = e.target.value;
+                });
+            });
+        }
+
+        function syncQuickMenuFromDom() {
+            const container = document.getElementById('quickmenu-list');
+            if (!container) return;
+            ensureQuickMenuConfig();
+
+            const cards = Array.from(container.querySelectorAll('.project-card'));
+            config.quickMenu.items = cards.map((card, i) => {
+                const idInput = card.querySelector('.quickmenu-id');
+                const titleInput = card.querySelector('.quickmenu-title');
+                const commandInput = card.querySelector('.quickmenu-command');
+                const enabledInput = card.querySelector('.quickmenu-enabled');
+                const confirmInput = card.querySelector('.quickmenu-confirm');
+                const confirmTextInput = card.querySelector('.quickmenu-confirm-text');
+
+                const fallback = config.quickMenu.items[i] || {};
+                return {
+                    id: normalizeQuickMenuId(idInput?.value || fallback.id || `quick_${i + 1}`),
+                    title: String(titleInput?.value || fallback.title || '').trim(),
+                    command: String(commandInput?.value || fallback.command || '').trim(),
+                    enabled: enabledInput ? enabledInput.checked : fallback.enabled !== false,
+                    confirm: confirmInput ? confirmInput.checked : fallback.confirm === true,
+                    confirmText: String(confirmTextInput?.value || fallback.confirmText || '').trim()
+                };
+            });
+        }
+
+        function addQuickMenuItem() {
+            ensureQuickMenuConfig();
+            const nextId = normalizeQuickMenuId(`quick_action_${config.quickMenu.items.length + 1}`);
+            config.quickMenu.items.push({
+                id: nextId,
+                title: 'New Quick Action',
+                command: '',
+                enabled: true,
+                confirm: false,
+                confirmText: ''
+            });
+            renderQuickMenu();
+        }
+        
+        // Render background settings
+        function renderBackground() {
+            try {
+                console.log('Rendering background:', config.background);
+                const bg = config.background || {};
+                
+                const bgPreviewContainer = document.getElementById('bg-preview-container');
+                const bgPreview = document.getElementById('bg-preview');
+                const bgVideoPreview = document.getElementById('bg-video-preview');
+                const bgRemoveBtn = document.getElementById('btn-remove-bg');
+                const bgVideoOptions = document.getElementById('bg-video-options');
+                
+                const bgFit = document.getElementById('bg-fit');
+                const bgPosition = document.getElementById('bg-position');
+                const bgOpacity = document.getElementById('bg-opacity');
+                const bgOpacityValue = document.getElementById('bg-opacity-value');
+                const bgBlur = document.getElementById('bg-blur');
+                const bgBlurValue = document.getElementById('bg-blur-value');
+                const bgScale = document.getElementById('bg-scale');
+                const bgScaleValue = document.getElementById('bg-scale-value');
+                const bgHeaderPosition = document.getElementById('bg-header-position');
+                
+                if (bgFit) bgFit.value = bg.fit || 'cover';
+                if (bgPosition) bgPosition.value = bg.position || 'center';
+                if (bgHeaderPosition) bgHeaderPosition.value = bg.headerPosition || 'low';
+                
+                const opacity = typeof bg.opacity === 'number' ? bg.opacity : 1;
+                const blur = typeof bg.blur === 'number' ? bg.blur : 0;
+                const scale = typeof bg.scale === 'number' ? bg.scale : 1;
+                
+                if (bgOpacity) bgOpacity.value = opacity;
+                if (bgOpacityValue) bgOpacityValue.textContent = Math.round(opacity * 100) + '%';
+                if (bgBlur) bgBlur.value = blur;
+                if (bgBlurValue) bgBlurValue.textContent = blur + 'px';
+                if (bgScale) bgScale.value = scale;
+                if (bgScaleValue) bgScaleValue.textContent = Math.round(scale * 100) + '%';
+                
+                // Video options
+                const bgVideoLoop = document.getElementById('bg-video-loop');
+                const bgVideoMuted = document.getElementById('bg-video-muted');
+                const bgVideoAutoplay = document.getElementById('bg-video-autoplay');
+                if (bgVideoLoop) bgVideoLoop.checked = bg.videoLoop !== false;
+                if (bgVideoMuted) bgVideoMuted.checked = bg.videoMuted !== false;
+                if (bgVideoAutoplay) bgVideoAutoplay.checked = bg.videoAutoplay !== false;
+                
+                // Update preview - detect type from file extension
+                if (bg.src) {
+                    const isVideo = bg.src.match(/\.(mp4|webm|mov|avi)$/i);
+                    bgPreviewContainer.style.display = 'block';
+                    bgRemoveBtn.style.display = 'inline-flex';
+                    
+                    if (isVideo) {
+                        bgPreview.style.display = 'none';
+                        bgVideoPreview.style.display = 'block';
+                        bgVideoPreview.src = bg.src;
+                        bgVideoOptions.style.display = 'block';
+                    } else {
+                        bgPreview.style.display = 'block';
+                        bgVideoPreview.style.display = 'none';
+                        bgPreview.src = bg.src;
+                        bgVideoOptions.style.display = 'none';
+                    }
+                } else {
+                    bgPreviewContainer.style.display = 'none';
+                    bgRemoveBtn.style.display = 'none';
+                    bgVideoOptions.style.display = 'none';
+                }
+                renderBackgroundLibrary();
+            } catch (err) {
+                console.error('Error in renderBackground:', err);
+            }
+        }
+
+        function ensureBackgroundLibrary() {
+            if (!config) return [];
+            if (!Array.isArray(config.backgroundLibrary)) {
+                config.backgroundLibrary = [];
+            }
+            backgroundLibrary = config.backgroundLibrary;
+            return backgroundLibrary;
+        }
+
+        function renderBackgroundLibrary() {
+            const list = document.getElementById('bg-library-list');
+            if (!list || !config) return;
+            const library = ensureBackgroundLibrary();
+            const defaultName = typeof config.defaultBackground === 'string' ? config.defaultBackground : '';
+            const defaultExists = library.some((entry) => entry?.name === defaultName);
+            const resolvedDefault = defaultExists ? defaultName : '';
+            if (defaultName && !defaultExists) {
+                config.defaultBackground = '';
+            }
+
+            if (!library.length) {
+                list.innerHTML = '<p style="color: #666; font-size: 13px;">No library entries yet.</p>';
+                return;
+            }
+
+            list.innerHTML = `
+                <div class="library-item">
+                    <div class="library-info">
+                        <div class="library-meta">Default background when no cache selection is present.</div>
+                    </div>
+                    <div class="library-controls">
+                        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);">
+                            <input type="radio" name="bg-default" class="bg-default-radio" value="" ${resolvedDefault ? '' : 'checked'}>
+                            <span>Image mode background</span>
+                        </label>
+                    </div>
+                </div>
+                ${library.map((entry, i) => {
+                const fit = entry.fit || 'cover';
+                const path = entry.image || entry.src || entry.video || '';
+                return `
+                    <div class="library-item" data-index="${i}">
+                        <div class="library-info">
+                            <input type="text" class="library-name-input bg-library-name" data-index="${i}" value="${escapeHtml(entry.name || '')}" placeholder="Display name">
+                            <div class="library-meta">${escapeHtml(path)}</div>
+                        </div>
+                        <div class="library-controls">
+                            <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);">
+                                <input type="radio" name="bg-default" class="bg-default-radio" data-index="${i}" value="${escapeHtml(entry.name || '')}" ${entry.name === resolvedDefault ? 'checked' : ''}>
+                                <span>Default</span>
+                            </label>
+                            <select class="library-fit bg-library-fit" data-index="${i}">
+                                <option value="cover" ${fit === 'cover' ? 'selected' : ''}>Cover</option>
+                                <option value="contain" ${fit === 'contain' ? 'selected' : ''}>Contain</option>
+                                <option value="fill" ${fit === 'fill' ? 'selected' : ''}>Fill</option>
+                                <option value="none" ${fit === 'none' ? 'selected' : ''}>None</option>
+                            </select>
+                            <button class="btn" onclick="moveBackgroundLibrary(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#x25B2;</button>
+                            <button class="btn" onclick="moveBackgroundLibrary(${i}, 1)" ${i === library.length - 1 ? 'disabled' : ''} title="Move down">&#x25BC;</button>
+                            <button class="btn btn-danger" onclick="removeBackgroundLibrary(${i})" style="margin: 0;">Remove</button>
+                        </div>
+                    </div>
+                `;
+                }).join('')}
+            `;
+
+            list.querySelectorAll('.bg-library-name').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    const prevName = config.backgroundLibrary[idx].name;
+                    const name = e.target.value.trim();
+                    config.backgroundLibrary[idx].name = name;
+                    if (config.defaultBackground && config.defaultBackground === prevName) {
+                        config.defaultBackground = name;
+                    }
+                    saveBackgroundLibrary();
+                });
+            });
+
+            list.querySelectorAll('.bg-library-fit').forEach((select) => {
+                select.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    if (!Number.isFinite(idx)) return;
+                    config.backgroundLibrary[idx].fit = e.target.value;
+                    saveBackgroundLibrary();
+                });
+            });
+
+            list.querySelectorAll('.bg-default-radio').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    if (!e.target.checked) return;
+                    const value = e.target.value || '';
+                    config.defaultBackground = value;
+                    saveBackgroundLibrary({ silent: true });
+                });
+            });
+        }
+        
+        // Save functions
+        async function saveMenu() {
+            try {
+                config.menu = menu;
+                const response = await fetch(`${API_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                if (response.ok) {
+                    showToast('Menu saved');
+                    updateLastSaved();
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                showToast('Failed to save menu', true);
+            }
+        }
+        
+        async function saveApplications() {
+            try {
+                config.applications = applications;
+                const response = await fetch(`${API_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                
+                if (response.ok) {
+                    showToast('Applications saved');
+                    updateLastSaved();
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                showToast('Failed to save applications', true);
+            }
+        }
+        
+        async function saveSiteInfo() {
+            try {
+                const logoInvertCheckbox = document.getElementById('logo-invert');
+                const data = {
+                    logo: document.getElementById('site-logo').value,
+                    tagline: document.getElementById('site-tagline').value,
+                    about: document.getElementById('site-about').value,
+                    version: document.getElementById('site-version').value,
+                    buildDate: document.getElementById('site-build-date').value,
+                    siteUrl: document.getElementById('site-url').value,
+                    copyright: document.getElementById('site-copyright').value,
+                    showAbout: document.getElementById('show-about').checked,
+                    logoInvert: logoInvertCheckbox ? logoInvertCheckbox.checked : false,
+                    homeImage: config.homeImage || '',
+                    homeImageOpacity: parseFloat(document.getElementById('home-image-opacity')?.value || 0.75),
+                    homeImageFit: document.getElementById('home-image-fit')?.value || 'cover',
+                    homeImageCropX: parseInt(document.getElementById('home-image-crop-x')?.value || 50, 10),
+                    homeImageCropY: parseInt(document.getElementById('home-image-crop-y')?.value || 50, 10),
+                    homeImageZoom: parseFloat(document.getElementById('home-image-zoom')?.value || 1.0)
+                };
+                console.log('Saving site info with logoInvert:', data.logoInvert);
+                
+                const response = await fetch(`${API_URL}/api/config/site`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Save response:', result);
+                    config = result.config;
+                    showToast('Site info saved');
+                    updateLastSaved();
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                showToast('Failed to save site info', true);
+                console.error('Save error:', err);
+            }
+        }
+        
+        async function saveSettings() {
+            try {
+                const response = await fetch(`${API_URL}/api/config/site`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        devMode: document.getElementById('setting-devmode').checked,
+                        defaultPreset: document.getElementById('setting-default-preset').value,
+                        resourceLinksAlign: document.getElementById('setting-resource-links-align').value,
+                        resourceLinksFooter: document.getElementById('setting-resource-links-footer').checked,
+                        accountForWindowsVersionInfo: document.getElementById('setting-windows-version-info').checked,
+                        runAnyCommand: document.getElementById('setting-run-any').checked,
+                        allowedRunCommands: (document.getElementById('setting-allowed-commands').value || '')
+                            .split('\\n')
+                            .map(cmd => cmd.trim())
+                            .filter(cmd => cmd.length > 0),
+                        weather: {
+                            apiBase: document.getElementById('setting-weather-api-base').value.trim(),
+                            latitude: parseNumber(document.getElementById('setting-weather-lat').value),
+                            longitude: parseNumber(document.getElementById('setting-weather-lon').value),
+                            units: document.getElementById('setting-weather-units').value,
+                            label: document.getElementById('setting-weather-label').value.trim(),
+                            useLocationNames: document.getElementById('setting-weather-use-location-names').checked
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('Settings saved');
+                    updateLastSaved();
+                    config = await (await fetch(`${API_URL}/api/config`)).json();
+                } else {
+                    throw new Error('Failed to save');
+                }
+} catch (err) {
+                showToast('Failed to save settings', true);
+            }
+        }
+
+        async function resetDeveloperPanelSettings() {
+            try {
+                const response = await fetch(`${API_URL}/api/config/site`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        developerPanelSettings: null
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Developer panel settings reset');
+                    updateLastSaved();
+                    config = await (await fetch(`${API_URL}/api/config`)).json();
+                } else {
+                    throw new Error('Failed to reset');
+                }
+            } catch (err) {
+                showToast('Failed to reset developer panel settings', true);
+            }
+        }
+
+        async function saveQuickMenu() {
+            try {
+                if (!config.quickMenu || !Array.isArray(config.quickMenu.items)) {
+                    config.quickMenu = { items: defaultQuickMenuItems.map(item => ({ ...item })) };
+                }
+
+                syncQuickMenuFromDom();
+
+                const seenIds = new Set();
+                config.quickMenu.items = config.quickMenu.items
+                    .map((item, index) => {
+                        const baseId = normalizeQuickMenuId(item?.id || `quick_${index + 1}`);
+                        let nextId = baseId;
+                        let suffix = 2;
+                        while (seenIds.has(nextId)) {
+                            nextId = `${baseId}_${suffix}`;
+                            suffix += 1;
+                        }
+                        seenIds.add(nextId);
+
+                        return {
+                            id: nextId,
+                            title: String(item?.title || nextId),
+                            command: String(item?.command || ''),
+                            enabled: item?.enabled !== false,
+                            confirm: item?.confirm === true,
+                            confirmText: String(item?.confirmText || '')
+                        };
+                    });
+
+                const response = await fetch(`${API_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save quick menu');
+                }
+
+                showToast('Quick menu saved');
+                updateLastSaved();
+                config = await (await fetch(`${API_URL}/api/config`)).json();
+                renderQuickMenu();
+            } catch (err) {
+                showToast('Failed to save quick menu', true);
+            }
+        }
+
+        function resetQuickMenuDefaults() {
+            config.quickMenu = { items: defaultQuickMenuItems.map(item => ({ ...item })) };
+            renderQuickMenu();
+            showToast('Quick menu reset (save to apply)');
+        }
+        
+        async function saveBackground() {
+            try {
+                const bgFit = document.getElementById('bg-fit');
+                const bgPosition = document.getElementById('bg-position');
+                const bgOpacity = document.getElementById('bg-opacity');
+                const bgBlur = document.getElementById('bg-blur');
+                const bgScale = document.getElementById('bg-scale');
+                const bgHeaderPosition = document.getElementById('bg-header-position');
+                const bgVideoLoop = document.getElementById('bg-video-loop');
+                const bgVideoMuted = document.getElementById('bg-video-muted');
+                const bgVideoAutoplay = document.getElementById('bg-video-autoplay');
+                
+                const bg = config.background || {};
+                
+                const data = {
+                    background: {
+                        src: bg.src || '',
+                        fit: bgFit?.value || 'cover',
+                        position: bgPosition?.value || 'center',
+                        opacity: parseFloat(bgOpacity?.value || 1),
+                        blur: parseInt(bgBlur?.value || 0, 10),
+                        scale: parseFloat(bgScale?.value || 1),
+                        headerPosition: bgHeaderPosition?.value || 'low',
+                        videoLoop: bgVideoLoop?.checked !== false,
+                        videoMuted: bgVideoMuted?.checked !== false,
+                        videoAutoplay: bgVideoAutoplay?.checked !== false
+                    }
+                };
+                
+                const response = await fetch(`${API_URL}/api/config/site`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    config = result.config;
+                    showToast('Background settings saved');
+                    updateLastSaved();
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                showToast('Failed to save background settings', true);
+                console.error('Save error:', err);
+            }
+        }
+
+        async function saveBackgroundLibrary(options = {}) {
+            const { silent = false } = options;
+            try {
+                ensureBackgroundLibrary();
+                const response = await fetch(`${API_URL}/api/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    if (!silent) {
+                        showToast('Background library saved');
+                    }
+                    updateLastSaved();
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (err) {
+                if (!silent) {
+                    showToast('Failed to save background library', true);
+                }
+            }
+        }
+        
+        // Menu actions
+        function addMenu() {
+            menu.push({
+                id: 'menu_' + Date.now(),
+                title: 'New Menu Item',
+                desc: 'Description here',
+                command: ''
+            });
+            renderMenu();
+            saveMenu();
+        }
+        
+        async function deleteMenuItem(index) {
+            if (confirm('Delete this menu item?')) {
+                menu.splice(index, 1);
+                renderMenu();
+                await saveMenu();
+            }
+        }
+        
+        // Application actions
+        function addApplication() {
+            applications.push({
+                id: 'app_' + Date.now(),
+                name: 'New Application',
+                description: '',
+                command: ''
+            });
+            renderApplications();
+            saveApplications();
+        }
+        
+        async function deleteApplication(index) {
+            if (confirm('Delete this application?')) {
+                applications.splice(index, 1);
+                renderApplications();
+                await saveApplications();
+            }
+        }
+        
+        // Preset actions
+        async function addPresetMapping(id, name, filename) {
+            try {
+                const response = await fetch(`${API_URL}/api/presets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: id,
+                        name: name,
+                        file: `presets/${filename}`
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('Preset added');
+                    config = await (await fetch(`${API_URL}/api/config`)).json();
+                    presets = config.presets || [];
+                    renderPresets();
+                    renderSettings();
+                } else {
+                    throw new Error('Failed to add');
+                }
+            } catch (err) {
+                showToast('Failed to add preset', true);
+            }
+        }
+        
+        async function removePreset(id) {
+            if (confirm('Remove this preset? This also removes its preset file when possible.')) {
+                try {
+                    const response = await fetch(`${API_URL}/api/presets/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json().catch(() => ({}));
+                        const fileDeleted = result.fileDeleted === true;
+                        const fileKeptReason = result.fileKeptReason || '';
+
+                        if (fileDeleted) {
+                            showToast('Preset removed and file deleted');
+                        } else if (fileKeptReason) {
+                            showToast(`Preset removed (file kept: ${fileKeptReason})`, true);
+                        } else {
+                            showToast('Preset removed');
+                        }
+
+                        presets = presets.filter(p => p.id !== id);
+                        renderPresets();
+                        renderSettings();
+                    } else {
+                        throw new Error('Failed to remove');
+                    }
+                } catch (err) {
+                    showToast('Failed to remove preset', true);
+                }
+            }
+        }
+
+        async function deletePresetFile(encodedFilename) {
+            const filename = decodeURIComponent(encodedFilename || '');
+            if (!filename) return;
+
+            if (!confirm(`Delete preset file "${filename}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/preset-files/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete preset file');
+                }
+
+                showToast('Preset file deleted');
+                config = await (await fetch(`${API_URL}/api/config`)).json();
+                presets = config.presets || [];
+                renderPresets();
+                renderSettings();
+            } catch (err) {
+                showToast('Failed to delete preset file', true);
+            }
+        }
+        
+        // Utility
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        
+// Tab switching
+        const ADMIN_ACTIVE_TAB_KEY = 'configManagerActiveTab';
+
+        function activateTab(tabName, persist = true) {
+            const tabButton = document.querySelector(`.tab[data-tab="${tabName}"]`);
+            const tabContent = document.getElementById(`tab-${tabName}`);
+            if (!tabButton || !tabContent) return;
+
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            tabButton.classList.add('active');
+            tabContent.classList.add('active');
+
+            if (persist) {
+                localStorage.setItem(ADMIN_ACTIVE_TAB_KEY, tabName);
+            }
+
+            if (tabName === 'settings') {
+                renderSettings();
+            }
+            if (tabName === 'background') {
+                renderBackground();
+            }
+            if (tabName === 'quickmenu') {
+                renderQuickMenu();
+            }
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+        });
+        
+        // Event listeners
+        document.getElementById('btn-save-site').addEventListener('click', saveSiteInfo);
+        document.getElementById('btn-save-background').addEventListener('click', saveBackground);
+        document.getElementById('btn-add-menu').addEventListener('click', addMenu);
+        document.getElementById('btn-add-application').addEventListener('click', addApplication);
+        document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+        document.getElementById('btn-reset-dev-settings').addEventListener('click', resetDeveloperPanelSettings);
+        document.getElementById('btn-add-quickmenu').addEventListener('click', addQuickMenuItem);
+        document.getElementById('btn-save-quickmenu').addEventListener('click', saveQuickMenu);
+        document.getElementById('btn-reset-quickmenu').addEventListener('click', resetQuickMenuDefaults);
+
+        const weatherLatInput = document.getElementById('setting-weather-lat');
+        const weatherLonInput = document.getElementById('setting-weather-lon');
+        [weatherLatInput, weatherLonInput].forEach((input) => {
+            if (!input) return;
+            input.addEventListener('change', () => {
+                ensureWeatherMap();
+                syncWeatherMarkerFromInputs();
+            });
+        });
+        
+        // Logo upload
+        document.getElementById('btn-upload-logo').addEventListener('click', () => {
+            document.getElementById('logo-upload').click();
+        });
+        
+        document.getElementById('logo-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('logo', file);
+                
+                const response = await fetch(`${API_URL}/api/upload-logo`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    config.logoImage = result.path;
+                    showToast('Logo uploaded successfully');
+                    renderSiteInfo();
+                    saveSiteInfo();
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                showToast('Failed to upload logo: ' + err.message, true);
+            }
+            
+            e.target.value = '';
+        });
+        
+        document.getElementById('btn-remove-logo').addEventListener('click', async () => {
+            if (confirm('Remove logo image?')) {
+                config.logoImage = null;
+                renderSiteInfo();
+                await saveSiteInfo();
+                showToast('Logo removed');
+            }
+        });
+        
+        // Home image upload
+        document.getElementById('btn-upload-home-image').addEventListener('click', () => {
+            document.getElementById('home-image-upload').click();
+        });
+        
+        document.getElementById('home-image-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('homeImage', file);
+                
+                const response = await fetch(`${API_URL}/api/upload-home-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    config.homeImage = result.path;
+                    showToast('Home image uploaded successfully');
+                    renderSiteInfo();
+                    saveSiteInfo();
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                showToast('Failed to upload home image: ' + err.message, true);
+            }
+            
+            e.target.value = '';
+        });
+        
+        document.getElementById('btn-remove-home-image').addEventListener('click', async () => {
+            if (confirm('Remove home image?')) {
+                config.homeImage = '';
+                config.homeImageCropX = 50;
+                config.homeImageCropY = 50;
+                config.homeImageZoom = 1.0;
+                renderSiteInfo();
+                await saveSiteInfo();
+                showToast('Home image removed');
+            }
+        });
+
+        const homeOpacityInput = document.getElementById('home-image-opacity');
+        const homeOpacityValue = document.getElementById('home-image-opacity-value');
+        if (homeOpacityInput) {
+            homeOpacityInput.addEventListener('input', () => {
+                const value = parseFloat(homeOpacityInput.value || 0.75);
+                if (homeOpacityValue) {
+                    homeOpacityValue.textContent = Math.round(value * 100) + '%';
+                }
+                const preview = document.getElementById('home-image-preview');
+                if (preview) preview.style.opacity = value;
+            });
+        }
+        const homeFitSelect = document.getElementById('home-image-fit');
+        if (homeFitSelect) {
+            homeFitSelect.addEventListener('change', () => {
+                const preview = document.getElementById('home-image-preview');
+                if (preview) preview.style.objectFit = homeFitSelect.value;
+            });
+        }
+
+        // Home image crop controls
+        const cropXInput = document.getElementById('home-image-crop-x');
+        const cropYInput = document.getElementById('home-image-crop-y');
+        const cropXValue = document.getElementById('home-image-crop-x-value');
+        const cropYValue = document.getElementById('home-image-crop-y-value');
+        const zoomInput = document.getElementById('home-image-zoom');
+        const zoomValue = document.getElementById('home-image-zoom-value');
+        const homePreview = document.getElementById('home-image-preview');
+
+        function updateCropPreview() {
+            const cropX = parseInt(cropXInput?.value || 50, 10);
+            const cropY = parseInt(cropYInput?.value || 50, 10);
+            const zoom = parseFloat(zoomInput?.value || 1.0);
+            if (cropXValue) cropXValue.textContent = cropX + '%';
+            if (cropYValue) cropYValue.textContent = cropY + '%';
+            if (zoomValue) zoomValue.textContent = Math.round(zoom * 100) + '%';
+            if (homePreview) {
+                homePreview.style.objectPosition = `${cropX}% ${cropY}%`;
+                homePreview.style.transform = `scale(${zoom})`;
+                homePreview.style.transformOrigin = `${cropX}% ${cropY}%`;
+            }
+        }
+
+        async function removeBackgroundLibrary(index) {
+            if (!config || !Array.isArray(config.backgroundLibrary)) return;
+            if (confirm('Remove this background entry?')) {
+                const removed = config.backgroundLibrary[index];
+                config.backgroundLibrary.splice(index, 1);
+                if (removed?.name && config.defaultBackground === removed.name) {
+                    config.defaultBackground = '';
+                }
+                renderBackgroundLibrary();
+                await saveBackgroundLibrary();
+                showToast('Background entry removed');
+            }
+        }
+
+        async function moveBackgroundLibrary(index, direction) {
+            if (!config || !Array.isArray(config.backgroundLibrary)) return;
+            const nextIndex = index + direction;
+            if (nextIndex < 0 || nextIndex >= config.backgroundLibrary.length) return;
+            const entries = config.backgroundLibrary;
+            const [item] = entries.splice(index, 1);
+            entries.splice(nextIndex, 0, item);
+            renderBackgroundLibrary();
+            await saveBackgroundLibrary({ silent: true });
+        }
+
+        if (cropXInput) cropXInput.addEventListener('input', updateCropPreview);
+        if (cropYInput) cropYInput.addEventListener('input', updateCropPreview);
+        if (zoomInput) zoomInput.addEventListener('input', updateCropPreview);
+        
+        // Background controls
+        const bgOpacityInput = document.getElementById('bg-opacity');
+        const bgOpacityValue = document.getElementById('bg-opacity-value');
+        const bgBlurInput = document.getElementById('bg-blur');
+        const bgBlurValue = document.getElementById('bg-blur-value');
+        const bgScaleInput = document.getElementById('bg-scale');
+        const bgScaleValue = document.getElementById('bg-scale-value');
+        
+        if (bgOpacityInput) {
+            bgOpacityInput.addEventListener('input', () => {
+                if (bgOpacityValue) bgOpacityValue.textContent = Math.round(parseFloat(bgOpacityInput.value) * 100) + '%';
+            });
+        }
+        if (bgBlurInput) {
+            bgBlurInput.addEventListener('input', () => {
+                if (bgBlurValue) bgBlurValue.textContent = bgBlurInput.value + 'px';
+            });
+        }
+        if (bgScaleInput) {
+            bgScaleInput.addEventListener('input', () => {
+                if (bgScaleValue) bgScaleValue.textContent = Math.round(parseFloat(bgScaleInput.value) * 100) + '%';
+            });
+        }
+
+        // Background library upload
+        const bgLibraryUploadBtn = document.getElementById('btn-upload-bg-library');
+        const bgLibraryUploadInput = document.getElementById('bg-library-upload');
+        const bgLibraryNameInput = document.getElementById('bg-library-name');
+        const bgLibraryFitSelect = document.getElementById('bg-library-fit');
+
+        if (bgLibraryUploadBtn && bgLibraryUploadInput) {
+            bgLibraryUploadBtn.addEventListener('click', () => {
+                bgLibraryUploadInput.click();
+            });
+        }
+
+        if (bgLibraryUploadInput) {
+            bgLibraryUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                let name = bgLibraryNameInput?.value.trim() || '';
+                if (!name) {
+                    name = file.name.replace(/\.[^/.]+$/, '');
+                    if (bgLibraryNameInput) bgLibraryNameInput.value = name;
+                }
+                if (!name) {
+                    showToast('Please enter a name for the library entry', true);
+                    e.target.value = '';
+                    return;
+                }
+
+                const fit = bgLibraryFitSelect?.value || 'cover';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('background', file);
+
+                    const response = await fetch(`${API_URL}/api/upload-background-library`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        ensureBackgroundLibrary();
+                        config.backgroundLibrary.push({
+                            name: name,
+                            image: result.path,
+                            fit: fit
+                        });
+                        renderBackgroundLibrary();
+                        await saveBackgroundLibrary({ silent: true });
+                        showToast('Background added to library');
+                        if (bgLibraryNameInput) bgLibraryNameInput.value = '';
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                } catch (err) {
+                    showToast('Failed to upload background: ' + err.message, true);
+                }
+
+                e.target.value = '';
+            });
+        }
+        
+        // Background upload
+        document.getElementById('btn-upload-bg').addEventListener('click', () => {
+            document.getElementById('bg-upload').click();
+        });
+        
+        document.getElementById('bg-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const formData = new FormData();
+                formData.append('background', file);
+                
+                const response = await fetch(`${API_URL}/api/upload-background`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (!config.background) config.background = {};
+                    config.background.src = result.path;
+                    config.background.type = result.type;
+                    showToast('Background uploaded successfully');
+                    renderBackground();
+                    saveBackground();
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                showToast('Failed to upload background: ' + err.message, true);
+            }
+            
+            e.target.value = '';
+        });
+        
+        document.getElementById('btn-remove-bg').addEventListener('click', async () => {
+            if (confirm('Remove background media?')) {
+                const currentSrc = String(config?.background?.src || '').trim();
+                let fileRemoved = false;
+                let fileDeleteError = '';
+
+                if (currentSrc) {
+                    try {
+                        const deleteResponse = await fetch(`${API_URL}/api/background-file`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ path: currentSrc })
+                        });
+
+                        if (deleteResponse.ok) {
+                            const result = await deleteResponse.json();
+                            fileRemoved = result.deleted === true;
+                        } else {
+                            const errorData = await deleteResponse.json().catch(() => ({}));
+                            fileDeleteError = errorData.error || 'Could not delete file';
+                        }
+                    } catch (err) {
+                        fileDeleteError = err.message || 'Could not delete file';
+                    }
+                }
+
+                if (!config.background) config.background = {};
+                config.background.src = '';
+                renderBackground();
+                await saveBackground();
+
+                if (fileDeleteError) {
+                    showToast(`Background removed (file kept: ${fileDeleteError})`, true);
+                } else if (currentSrc && fileRemoved) {
+                    showToast('Background removed and file deleted');
+                } else {
+                    showToast('Background removed');
+                }
+            }
+        });
+        
+        // Logo invert toggle - update preview and save
+        const logoInvertCheckbox = document.getElementById('logo-invert');
+        console.log('Logo invert checkbox found:', logoInvertCheckbox);
+        logoInvertCheckbox.addEventListener('change', async (e) => {
+            console.log('Logo invert changed:', e.target.checked);
+            const logoPreview = document.getElementById('logo-preview');
+            if (logoPreview && logoPreview.style.display !== 'none') {
+                if (e.target.checked) {
+                    logoPreview.style.filter = 'invert(1)';
+                } else {
+                    logoPreview.style.filter = 'none';
+                }
+            }
+            await saveSiteInfo();
+        });
+        
+        // Preset upload
+        document.getElementById('btn-upload-preset').addEventListener('click', () => {
+            document.getElementById('preset-upload').click();
+        });
+        
+        document.getElementById('preset-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const presetData = JSON.parse(event.target.result);
+                        const filename = file.name;
+                        
+                        // Upload the preset file
+                        const response = await fetch(`${API_URL}/api/preset-files/${filename}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(presetData)
+                        });
+                        
+                        if (response.ok) {
+                            showToast('Preset uploaded successfully');
+                            // Refresh the preset lists
+                            config = await (await fetch(`${API_URL}/api/config`)).json();
+                            presets = config.presets || [];
+                            renderPresets();
+                            renderSettings();
+                        } else {
+                            throw new Error('Failed to upload');
+                        }
+                    } catch (err) {
+                        showToast('Error: ' + err.message, true);
+                    }
+                };
+                reader.readAsText(file);
+            } catch (err) {
+                showToast('Error reading file', true);
+            }
+            
+            // Reset input
+            e.target.value = '';
+        });
+        
+        // Initial load
+        loadConfig();
+        
+        // Auto-refresh every 5 seconds to catch external changes
+        let lastConfigStamp = null;
+        setInterval(async () => {
+            try {
+                const hashRes = await fetch(`${API_URL}/api/config-hash`, { cache: 'no-store' });
+                if (!hashRes.ok) return;
+                const hashData = await hashRes.json();
+                if (!hashData || !hashData.stamp) return;
+                if (lastConfigStamp === null) {
+                    lastConfigStamp = hashData.stamp;
+                    return;
+                }
+                if (hashData.stamp === lastConfigStamp) return;
+                lastConfigStamp = hashData.stamp;
+
+                const response = await fetch(`${API_URL}/api/config`, { cache: 'no-store' });
+                if (!response.ok) return;
+                const newConfig = await response.json();
+
+                config = newConfig;
+                menu = config.menu || [];
+                presets = config.presets || [];
+                applications = config.applications || [];
+                backgroundLibrary = config.backgroundLibrary || [];
+
+                // Only re-render current tab to avoid losing focus
+                const activeTab = document.querySelector('.tab.active')?.dataset.tab || 'site';
+                if (activeTab === 'site') renderSiteInfo();
+                if (activeTab === 'background') renderBackground();
+                if (activeTab === 'menu') renderMenu();
+                if (activeTab === 'presets') renderPresets();
+                if (activeTab === 'applications') renderApplications();
+                if (activeTab === 'quickmenu') renderQuickMenu();
+                if (activeTab === 'settings') renderSettings();
+
+                showToast('Config updated externally');
+            } catch (err) {
+                // Silent fail for auto-refresh
+            }
+        }, 5000);
+        
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('configManagerTheme', theme);
+            themeIcon.textContent = theme === 'dark' ? '☀' : '☾';
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('configManagerTheme') || 'dark';
+        setTheme(savedTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+    </script>
+</body>
+</html>

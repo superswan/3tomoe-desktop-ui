@@ -1,0 +1,14 @@
+@keyframes rotate360 {
+    from {
+        transform: rotate(0deg);
+        opacity: 0;
+    }
+    to {
+        transform: rotate(360deg);
+        opacity: 1;
+    }
+}
+
+.rotate {
+    animation: rotate360 1.618s linear;
+}
