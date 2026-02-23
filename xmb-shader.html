@@ -38,6 +38,14 @@
       z-index: 1;
     }
 
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%);
+    }
+
     .panel {
       position: fixed;
       top: 14px;
@@ -108,6 +116,7 @@
 </head>
 <body>
   <canvas id="shader-bg"></canvas>
+  <div class="vignette"></div>
   <button id="toggle-panel">Settings</button>
 
   <aside id="panel" class="panel">
@@ -115,13 +124,12 @@
     <p>3tomoe wallpaper. Press H to toggle.</p>
 
     <div class="colors">
-      <div class="color-field"><label>Background</label><input id="bgColor" type="color" value="#261c38"></div>
-      <div class="color-field"><label>Wave Tint</label><input id="waveColor" type="color" value="#bfb3d9"></div>
+      <div class="color-field"><label>Background Tint</label><input id="bgColor" type="color" value="#ffffff"></div>
+      <div class="color-field"><label>Wave Tint</label><input id="waveColor" type="color" value="#ffffff"></div>
     </div>
 
     <div class="controls">
       <div class="field"><label>Brightness</label><span class="value" id="bgDarkenValue"></span><input id="bgDarken" type="range" min="0.2" max="1.4" step="0.01" value="0.55"></div>
-      <div class="field"><label>Gradient</label><span class="value" id="gradTiltValue"></span><input id="gradTilt" type="range" min="0" max="1" step="0.01" value="0.5"></div>
       <div class="field"><label>Wave Intensity</label><span class="value" id="waveMixValue"></span><input id="waveMix" type="range" min="0" max="1" step="0.01" value="0.7"></div>
       <div class="field"><label>Wave Contrast</label><span class="value" id="waveBoostValue"></span><input id="waveBoost" type="range" min="0.02" max="0.6" step="0.01" value="0.28"></div>
       <div class="field"><label>Dust Amount</label><span class="value" id="dustAmtValue"></span><input id="dustAmt" type="range" min="0" max="0.5" step="0.01" value="0.12"></div>
@@ -130,6 +138,11 @@
     <div class="toggle-row">
       <label for="dustOn">Dust Particles</label>
       <input id="dustOn" type="checkbox" checked>
+    </div>
+
+    <div class="toggle-row">
+      <label for="daveHoskins">Procedural Noise</label>
+      <input id="daveHoskins" type="checkbox">
     </div>
 
     <p class="status" id="status"></p>
@@ -161,22 +174,31 @@
       uniform vec2 iResolution;
       uniform vec3 uBgColor;
       uniform float uBgDarken;
-      uniform vec3 uGradTilt;
       uniform vec3 uWaveTint;
       uniform float uWaveMix;
       uniform vec2 uWaveBoost;
       uniform float uDustOn;
       uniform float uDustAmt;
+      uniform float uDaveHoskins;
       
       #define THRESHOLD 0.99
       #define MIN_DIST 0.13
       #define MAX_DIST 40.0
       #define MAX_DRAWS 40
       
-      float hash12(vec2 p) {
+      float hash12_texture(vec2 p) {
+        vec2 pi = vec2(mod(p.x, 256.0), mod(p.y, 256.0));
+        return fract(sin(dot(pi, vec2(12.9898, 78.233))) * 43758.5453);
+      }
+      
+      float hash12_procedural(vec2 p) {
         vec3 p3 = fract(vec3(p.xyx) * 0.1031);
         p3 += dot(p3, p3.yzx + 33.33);
         return fract((p3.x + p3.y) * p3.z);
+      }
+      
+      float hash12(vec2 p) {
+        return uDaveHoskins > 0.5 ? hash12_procedural(p) : hash12_texture(p);
       }
       
       float value2d(vec2 p) {
@@ -261,8 +283,13 @@
         vec2 mg = raymarch(o, d, 1.2);
         float m = mg.x;
         
-        vec3 c = uBgColor;
-        c += (uv.y - 0.5) * uGradTilt;
+        vec3 gradient = mix(
+          mix(vec3(0.7, 0.2, 0.2), vec3(0.4, 0.1, 0.1), uv.x),
+          mix(vec3(0.45, 0.1, 0.1), vec3(0.8, 0.3, 0.5), uv.x),
+          uv.y
+        );
+        
+        vec3 c = gradient * uBgColor;
         c *= uBgDarken;
         
         m = smoothstep(uWaveBoost.x, uWaveBoost.y, m);
@@ -275,21 +302,21 @@
     `;
 
     const defaults = {
-      bgColor: '#261c38',
-      waveColor: '#bfb3d9',
+      bgColor: '#ffffff',
+      waveColor: '#ffffff',
       bgDarken: 0.55,
-      gradTilt: 0.5,
       waveMix: 0.7,
       waveBoost: 0.28,
       dustOn: true,
-      dustAmt: 0.12
+      dustAmt: 0.12,
+      daveHoskins: false
     };
 
     let renderer, scene, camera, mesh, uniforms, clock;
 
     function hexToRgb(hex) {
       hex = String(hex || '').replace('#', '').trim();
-      if (hex.length !== 6) return [0.15, 0.12, 0.22];
+      if (hex.length !== 6) return [1, 1, 1];
       return [
         parseInt(hex.slice(0, 2), 16) / 255,
         parseInt(hex.slice(2, 4), 16) / 255,
@@ -315,7 +342,7 @@
       const toggleBtn = document.getElementById('toggle-panel');
       const statusEl = document.getElementById('status');
 
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -329,12 +356,12 @@
         iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         uBgColor: { value: new THREE.Vector3(...hexToRgb(state.bgColor)) },
         uBgDarken: { value: state.bgDarken },
-        uGradTilt: { value: new THREE.Vector3(0.04 * state.gradTilt, 0.02 * state.gradTilt, 0.06 * state.gradTilt) },
         uWaveTint: { value: new THREE.Vector3(...hexToRgb(state.waveColor)) },
         uWaveMix: { value: state.waveMix },
         uWaveBoost: { value: new THREE.Vector2(0.02, state.waveBoost) },
         uDustOn: { value: state.dustOn ? 1.0 : 0.0 },
-        uDustAmt: { value: state.dustAmt }
+        uDustAmt: { value: state.dustAmt },
+        uDaveHoskins: { value: state.daveHoskins ? 1.0 : 0.0 }
       };
 
       const material = new THREE.ShaderMaterial({
@@ -369,22 +396,22 @@
         bgColor: document.getElementById('bgColor'),
         waveColor: document.getElementById('waveColor'),
         bgDarken: document.getElementById('bgDarken'),
-        gradTilt: document.getElementById('gradTilt'),
         waveMix: document.getElementById('waveMix'),
         waveBoost: document.getElementById('waveBoost'),
         dustOn: document.getElementById('dustOn'),
-        dustAmt: document.getElementById('dustAmt')
+        dustAmt: document.getElementById('dustAmt'),
+        daveHoskins: document.getElementById('daveHoskins')
       };
 
       function updateUniforms() {
         uniforms.uBgColor.value.set(...hexToRgb(state.bgColor));
         uniforms.uBgDarken.value = state.bgDarken;
-        uniforms.uGradTilt.value.set(0.04 * state.gradTilt, 0.02 * state.gradTilt, 0.06 * state.gradTilt);
         uniforms.uWaveTint.value.set(...hexToRgb(state.waveColor));
         uniforms.uWaveMix.value = state.waveMix;
         uniforms.uWaveBoost.value.set(0.02, state.waveBoost);
         uniforms.uDustOn.value = state.dustOn ? 1.0 : 0.0;
         uniforms.uDustAmt.value = state.dustAmt;
+        uniforms.uDaveHoskins.value = state.daveHoskins ? 1.0 : 0.0;
         saveState(state);
       }
 
@@ -392,25 +419,25 @@
         state.bgColor = controls.bgColor.value;
         state.waveColor = controls.waveColor.value;
         state.bgDarken = parseFloat(controls.bgDarken.value);
-        state.gradTilt = parseFloat(controls.gradTilt.value);
         state.waveMix = parseFloat(controls.waveMix.value);
         state.waveBoost = parseFloat(controls.waveBoost.value);
         state.dustOn = controls.dustOn.checked;
         state.dustAmt = parseFloat(controls.dustAmt.value);
+        state.daveHoskins = controls.daveHoskins.checked;
       }
 
       function applyToControls() {
         controls.bgColor.value = state.bgColor;
         controls.waveColor.value = state.waveColor;
         controls.bgDarken.value = state.bgDarken;
-        controls.gradTilt.value = state.gradTilt;
         controls.waveMix.value = state.waveMix;
         controls.waveBoost.value = state.waveBoost;
         controls.dustOn.checked = state.dustOn;
         controls.dustAmt.value = state.dustAmt;
+        controls.daveHoskins.checked = state.daveHoskins;
       }
 
-      const sliderIds = ['bgDarken', 'gradTilt', 'waveMix', 'waveBoost', 'dustAmt'];
+      const sliderIds = ['bgDarken', 'waveMix', 'waveBoost', 'dustAmt'];
       sliderIds.forEach(id => {
         const input = controls[id];
         const valueEl = document.getElementById(id + 'Value');
@@ -426,6 +453,7 @@
       controls.bgColor.addEventListener('input', () => { readFromControls(); updateUniforms(); });
       controls.waveColor.addEventListener('input', () => { readFromControls(); updateUniforms(); });
       controls.dustOn.addEventListener('change', () => { readFromControls(); updateUniforms(); });
+      controls.daveHoskins.addEventListener('change', () => { readFromControls(); updateUniforms(); });
 
       toggleBtn.addEventListener('click', () => {
         panel.classList.toggle('hidden');
